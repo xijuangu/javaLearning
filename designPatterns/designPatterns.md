@@ -156,3 +156,120 @@
 - 高内聚(尽量少公布public方法)
 - 定制服务(为每个模块定制接口)
 - 有限度(细化要适中)
+
+## 第五章
+
+### 迪米特法则
+
+> 也称为最少知识原则
+
+一个类应该对 **自己需要耦合或调用的类** 知道的最少，即，只调用 **自己需要耦合或调用的类** 提供的public方法，不调用自己没有耦合或调用的类与方法。
+
+上面的定义也可以解释为：只与**直接的**朋友通信。  
+朋友类：出现在 **成员变量中** 或 **方法的输入输出参数中** 的类，而出现在方法体内部的类不属于朋友类。
+
+#### 例子1
+
+老师给体育委员发布命令，清点女生数量
+
+```java
+public class Teacher{
+    public void command(GroupLeader groupLeader){   // GroupLeader是Teacher的朋友类
+        // 创建女生队列
+        List<Girl> listGirls = new ArrayList();     // Girl类出现在command方法体内，不属于Teacher的朋友类
+                                                    // 也就是说，command方法与陌生的类Girl有了交流，破坏了Teacher的健壮性
+                                                    // 方法是类的一个行为，类竟然不知道自己的行为与其他类产生了依赖关系，这是不允许的，严重违反了迪米特法则
+        for (int i = 0; i < 20; i ++){
+            listGirls.add(new Girl());
+        }
+        // 告诉体育委员执行清点任务
+        groupLeader.countGirls(listGirls);
+    }
+}
+
+public class GroupLeader{
+    // 清点女生数量
+    public void countGirls(List<Girl> listGirls){
+        System.out.println("女生总人数为：" + listGirls.size());
+    }
+}
+
+public class Girl{}
+
+public class Client{
+    public static void main(String[] args){
+        Teacher teacher = new Teacher();
+        teacher.command(new GroupLeader());
+    }
+}
+```
+
+修改后的Teacher类与GroupLeader类：
+
+```java
+public class Teacher{
+    public void command(GroupLeader groupLeader){   // GroupLeader是Teacher的朋友类
+        // 告诉体育委员执行清点任务
+        groupLeader.countGirls(listGirls);
+    }
+}
+
+public class GroupLeader{
+    private List<Girl> listGirls;
+    // 传递全班女生进来
+    public void setListGirls(List<Girl> _listGirls){
+        this.listGirls = _listGirls;
+    }
+    // 清点女生数量
+    public void countGirls(){
+        System.out.println("女生总人数为：" + this.listGirls.size());
+    }
+}
+```
+
+### 朋友类之间不应过于高度耦合
+
+#### 例子2
+
+```java
+public class VSCode{
+    private Random rand = new Random(System.currentTimeMillis());
+
+    public int first(){
+        System.out.println("执行第一个方法");
+        return rand.nextInt(100);
+    }
+
+    public int second(){
+        System.out.println("执行第二个方法");
+        return rand.nextInt(100);
+    }
+
+    public int third(){
+        System.out.println("执行第三个方法");
+        return rand.nextInt(100);
+    }
+}
+
+public class InstallSoftware{
+    public void installVSCode(VSCode vscode){
+        int first = vscode.first();             // 如果要把first、second、third的返回值改成boolean，就需要两个类一起改，应当避免这种设计
+        if(first > 50){                         // 这种情况就是耦合关系过于牢固的负面效果
+            int second = vscode.second();       
+            if(second > 50){
+                int third = vscode.third();
+                if(third > 50){
+                    vscode.first();
+                }
+            }
+        }
+    }
+}
+
+public class Client{
+    public static void main(String[] args){
+        InstallSoftware invoker = new InstallSoftware();
+        invoker.installVSCode(new VSCode());
+    }
+}
+```
