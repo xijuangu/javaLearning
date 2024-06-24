@@ -87,11 +87,15 @@ public static void main(String[] args){
 }
 ```
 
+<h4 id="BeanFactory内部注入">
+    BeanFactory内部注入
+</h4>
+
 看下图可以发现，UserService存在于BeanFactory中，UserDao也存在于BeanFactory中，那么可以直接在BeanFactory内部进行结合。将UserDao在BeanFactory内部设置给UserService的过程叫做“注入”，而UserService需要依赖UserDao的注入才能正常工作，这个过程叫做“依赖注入”
 
 ![BeanFactory内部示意图](image.png)
 
-Q3：
+Q3：IoC与DI之间的区别是什么？（面试真题）
 > IoC： Inversion of Control，控制反转，将Bean的创建权由原来程序反转给第三方  
 DI：Dependency Injection，依赖注入，某个Bean的完整创建依赖于其他Bean（或普通参数）的注入  
 IoC强调的是Bean创建权的反转，而DI强调的是Bean的依赖关系，认为不是一回事
@@ -267,3 +271,58 @@ UserService userService = (UserService) beanFactory.getBean("userService");
 //打印地址，测试是否成功创建对象
 System.out.println(userService);
 ```
+
+### 注入
+
+当我们在一个类中使用其他类的对象时(例如，在UserService中使用UserDao)，UserService中就必然需要维护UserDao，比如说设置一个setDao方法，把UserDao对象给set进去。但是上面我们提到过，使用DI思想可以直接在BeanFactory内部，将UserDao注入UserService
+
+> [点击跳转到"BeanFactory内部注入"](#BeanFactory内部注入)
+
+实现举例：
+
+1. 定义UserDao接口与UserDaoImpl实现类
+
+    ```java
+    public interface UserDao {}
+    ```
+
+    ```java
+    public class UserDaoImpl implements UserDao {}
+    ```
+
+2. 修改UserServiceImpl代码，添加一个setUserDao(UserDao userDao)用于接收注入的对象
+
+   ```java
+    public class UserServiceImpl implements UserService {
+        private UserDao userDao;
+
+        public void setUserDao(UserDao userDao) {
+        System.out.println("BeanFactory自动调用该方法" + userDao);
+        this.userDao = userDao;
+        }
+    }
+   ```
+
+3. 定义UserDao接口及其UserDaoImpl实现类
+
+    ```xml
+    <bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
+    <property name="userDao" ref="userDao"/>
+    <!--property name是上面UserService中setUserDao方法后面的"userDao"，首字母要小写。property ref是引用，在当前容器中找到对应的bean，也就是下面的id为userDao的bean.
+    -->
+    <!--把当前容器中找到的名为userDao的bean设置给UserServiceImpl中的名字为setUserDao的方法。-->
+    <!--命名与规则是约定好的，不可随意修改-->
+    </bean>
+
+    <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl"></bean>
+    ```
+
+4. 编写测试代码，创建BeanFactory，加载配置文件，获取UserService实例对象
+
+    ```java
+    DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+    XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+    reader.loadBeanDefinitions("beans.xml");
+
+    UserService userService = (UserService) beanFactory.getBean("userService");
+    ```
