@@ -255,7 +255,7 @@ public class UserServiceImpl implements UserService {}
 //创建BeanFactory工厂对象
 DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-//创建读取器（xml文件），参数为BeanFactory工厂对象
+//创建读取器（xml文件），让BeanFactory工厂对象读取
 XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
 
 //读取配置文件给工厂
