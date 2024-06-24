@@ -326,3 +326,59 @@ System.out.println(userService);
 
     UserService userService = (UserService) beanFactory.getBean("userService");
     ```
+
+## ApplicationContext快速入门
+
+ApplicationContext 称为Spring容器，内部封装了BeanFactory，比BeanFactory功能更丰富更强大，使用 ApplicationContext 进行开发时，xml配置文件的名称习惯写成applicationContext.xml
+
+```java
+//创建ApplicationContext,加载配置文件，实例化容器
+ApplicationContext applicationContext = 
+new ClassPathxmlApplicationContext("applicationContext.xml");
+//根据beanName获得容器中的Bean实例
+UserService userService = (UserService) applicationContext.getBean("userService");
+System.out.println(userService);
+```
+
+### ApplicationContext与BeanFactory的关系
+
+1. BeanFactory是Spring的早期接口，称为Spring的Bean工厂，ApplicationContext是后期更高级接口，称之为Spring 容器；
+2. ApplicationContext在BeanFactory基础上对功能进行了扩展，例如：监听功能、国际化功能等。BeanFactory的API更偏向底层，ApplicationContext的API大多数是对这些底层API的封装；
+3. Bean创建的主要逻辑和功能都被封装在BeanFactory中，ApplicationContext不仅继承了BeanFactory，而且
+ApplicationContext内部还维护着BeanFactory的引用，所以，ApplicationContext与BeanFactory既有继承关系，又有融合关系。
+4. Bean的初始化时机不同，原始BeanFactory是在首次调用getBean时才进行Bean的创建，而ApplicationContext则是配置文件加载，容器一创建就将Bean都实例化并初始化好。
+
+### BeanFactory的继承体系
+
+BeanFactory是核心接口，项目运行过程中肯定有具体实现参与，这个具体实现就是DefaultListableBeanFactory，而ApplicationContext内部维护的Beanfactory的实现类也是它。
+
+![alt text](image-1.png)
+
+### ApplicationContext的继承体系
+
+- 只在Spring基础环境下，即只导入spring-context坐标时，此时ApplicationContext的继承体系
+
+    ![alt text](image-2.png)
+
+    |实现类|功能描述|
+    |---|---|
+    |ClassPathXmlApplicationContext |加载类路径下的xml配置的ApplicationContext|
+    |FileSystemXmlApplicationContext |加载磁盘路径下的xml配置的ApplicationContext|
+    |AnnotationConfigApplicationContext |加载**注解**配置类的ApplicationContext|
+
+- 如果Spring基础环境中加入了其他组件解决方案，如web层解决方案，即导入spring-web坐标，此时ApplicationContext的继承体系
+
+    ```xml
+    <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-web</artifactId>
+    <version>5.3.7</version>
+    </dependency>
+    ```
+
+    ![alt text](image-3.png)
+
+    |实现类|功能描述|
+    |---|---|
+    |XmlWebApplicationContext |web环境下，加载类路径下的xml配置的ApplicationContext|
+    |AnnotationConfigWebApplicationContext |web环境下，加载注解配置类的ApplicationContext|
