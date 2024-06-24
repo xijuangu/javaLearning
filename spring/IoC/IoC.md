@@ -235,6 +235,9 @@ public class AopTest {
 
 ```java
 public interface UserService {}
+```
+
+```java
 public class UserServiceImpl implements UserService {}
 ```
 
@@ -244,15 +247,23 @@ public class UserServiceImpl implements UserService {}
 <bean id="userService" class="com.itheima.service.impl.UserServiceImpl"></bean>
 ```
 
+> ``bean id``任意选择，自己定义
+
 ### 编写测试代码，创建BeanFactory，加载配置文件，获取UserService实例对象
 
 ```java
-//创建BeanFactory
+//创建BeanFactory工厂对象
 DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-//创建读取器
+
+//创建读取器（xml文件），参数为BeanFactory工厂对象
 XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-//加载配置文件
+
+//读取配置文件给工厂
 reader.loadBeanDefinitions("beans.xml");
-//获取Bean实例对象
+
+//根据bean id获取Bean实例对象
 UserService userService = (UserService) beanFactory.getBean("userService");
+
+//打印地址，测试是否成功创建对象
+System.out.println(userService);
 ```
