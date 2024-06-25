@@ -307,7 +307,7 @@ System.out.println(userService);
 
     ```xml
     <bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
-    <property name="userDao" ref="userDao"/>
+    <property name="userDao" ref="userDao"></property>
     <!--property name是上面UserService中setUserDao方法后面的"userDao"，首字母要小写。property ref是引用，在当前容器中找到对应的bean，也就是下面的id为userDao的bean.
     -->
     <!--把当前容器中找到的名为userDao的bean设置给UserServiceImpl中的名字为setUserDao的方法。-->
@@ -382,3 +382,120 @@ BeanFactory是核心接口，项目运行过程中肯定有具体实现参与，
     |---|---|
     |XmlWebApplicationContext |web环境下，加载类路径下的xml配置的ApplicationContext|
     |AnnotationConfigWebApplicationContext |web环境下，加载注解配置类的ApplicationContext|
+
+## 基于xml的Spring应用
+
+### Bean的常用配置一览
+
+|序号|xml配置方式|功能描述|
+|---|---|---|
+|1|`<bean id="" class="">` |Bean的id和全限定名配置|
+|2|`<bean name="">` |通过name设置Bean的别名(id的别名)，通过别名也能直接获取到Bean实例|
+|3|`<bean scope="">` |Bean的作用范围，BeanFactory作为容器时取值singleton和prototype|
+|4|`<bean lazy-init="">` |Bean的实例化时机，是否延迟加载。BeanFactory作为容器时无效|
+|5|`<bean init-method="">` |Bean实例化后自动执行的初始化方法，method指定方法名|
+|6|`<bean destroy-method="">` |Bean实例销毁前的方法，method指定方法名|
+|7|`<bean autowire="byType">` |设置自动注入模式，常用的有按照类型byType，按照名字byName|
+|8|`<bean factory-bean="" factory-method=""/>` |指定哪个工厂Bean的哪个方法完成Bean的创建|
+
+### Bean的基础配置
+
+```xml
+<bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
+    <property name="userDao" ref="userDao"></property>
+</bean>
+
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl"></bean>
+```
+
+- id为**配置文件中**唯一标识符，不可重复，但在容器内会把bean对象的id转化为beanName进行存储。如果不配置id，则beanName会默认设置为**全限定名**存储在容器中
+  > 全限定名：形如`com.itheima.service.impl.UserServiceImpl`
+- `getBean()`方法中的参数为beanName
+
+### Bean的别名
+
+可以为当前Bean指定多个别名，别名在容器外单独存储，在aliasMap中分别指向对应的beanName。根据别名也可以获得Bean对象：
+
+```xml
+<bean id="userDao" name="aaa,bbb" class="com.itheima.dao.impl.UserDaoImpl"/>
+```
+
+此时多个名称都可以获得UserDaoImpl实例对象
+
+```java
+applicationContext.getBean("userDao");
+applicationContext.getBean("aaa");
+applicationContext.getBean("bbb");
+```
+
+若不配置id，只配置别名name，则默认选择第一个别名作为beanName
+
+```xml
+<bean name="aaa,bbb" class="com.itheima.dao.impl.UserDaoImpl"/>
+<!--此时aaa默认为beanName-->
+```
+
+### Bean的作用范围
+
+默认情况下，**基础的**Spring环境Bean的作用范围有两个：singleton和prototype：`<bean scope="prototype">`
+
+- singleton：单例，默认值，Spring容器创建的时候，就会进行Bean的实例化，并存储到容器内部的单例池中，每次getBean时都是从单例池中获取 ***同一个*** Bean实例；
+- prototype：原型，Spring容器初始化时不会创建Bean实例，当调用getBean时才会实例化Bean，每次getBean都会创建一个新的Bean实例，用完就销毁。
+
+### Bean的延迟加载
+
+***在ApplicationContext中*** ，当lazy-init设置为true时为延迟加载，也即，当Spring容器创建时，不会立即创建Bean实例，而是等待调用`getBean()`时再创建并存入单例池中，后续再使用该Bean时将直接从单例池中获取，本质上该Bean还是单例的。
+
+在BeanFactory中无效，因为它本来就是在调用时再创建的，而ApplicationContext默认在创建容器时就创建Bean实例。
+
+```xml
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl" lazy-init="true"/>
+```
+
+### Bean的初始化和销毁方法配置
+
+Bean在被实例化后，可以执行指定的初始化方法完成一些初始化的操作，Bean在销毁之前也可以执行指定的销毁方法完成一些操作。
+
+```xml
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl" init-method="init" destroy-method="destroy"/>
+```
+
+```java
+public class UserDaoImpl implements UserDao {
+    public UserDaoImpl() { 
+        System.out.println("UserDaoImpl创建了..."); 
+    }
+    public void init(){ 
+        System.out.println("初始化方法..."); 
+    }
+    public void destroy(){ 
+        System.out.println("销毁方法..."); 
+    }
+}
+```
+
+> 程序在执行完成后，需要显式地关闭容器才会在销毁bean的同时调用销毁方法。如果正常地结束进程或杀死进程，容器和bean也会被销毁，只是不会调用销毁方法，因为容器还没有来得及调用它们，进程就结束了。
+>
+> `ApplicationContext`不提供关闭容器的方法，但它的实现类`ClassPathXmlApplicationContext`和`AnnotationConfigApplicationContext`提供了`close()`方法。
+
+扩展：除此之外，我们还可以通过实现 InitializingBean 接口，完成一些Bean的初始化操作，如下：
+
+```java
+public class UserDaoImpl implements UserDao, InitializingBean {
+    public UserDaoImpl() {
+        System.out.println("UserDaoImpl创建了...");
+    }
+    public void init(){
+        System.out.println("初始化方法...");
+    }
+    public void destroy(){
+        System.out.println("销毁方法...");
+    }
+
+    //执行时机早于init-method配置的方法
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("InitializingBean..."); 
+    }
+}
+```
