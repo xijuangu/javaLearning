@@ -460,7 +460,7 @@ Bean在被实例化后，可以执行指定的初始化方法完成一些初始�
 <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl" init-method="init" destroy-method="destroy"/>
 ```
 
-```java
+```java {.line-numbers}
 public class UserDaoImpl implements UserDao {
     public UserDaoImpl() { 
         System.out.println("UserDaoImpl创建了..."); 
@@ -480,7 +480,7 @@ public class UserDaoImpl implements UserDao {
 
 扩展：除此之外，我们还可以通过实现 InitializingBean 接口，完成一些Bean的初始化操作，如下：
 
-```java
+```java {.line-numbers}
 public class UserDaoImpl implements UserDao, InitializingBean {
     public UserDaoImpl() {
         System.out.println("UserDaoImpl创建了...");
@@ -499,3 +499,63 @@ public class UserDaoImpl implements UserDao, InitializingBean {
     }
 }
 ```
+
+### Bean的实例化配置
+
+Spring的实例化方式主要如下两种：
+
+- 构造方式实例化：底层通过构造方法对Bean进行实例化
+- 工厂方式实例化：底层通过调用自定义的工厂方法对Bean进行实例化
+
+#### 构造方式实例化
+
+构造方式实例化Bean又分为无参构造方法实例化和有参构造方法实例化，Spring中配置的`<bean>`几乎都是无参构造该方式，此处不再赘述。下面介绍有参构造方法实例化Bean
+
+```java
+public UserDaoImpl(){}
+public UserDaoImpl(String name, int age){}
+```
+
+有参构造在实例化Bean时，需要参数的注入，通过`<constructor-arg>`标签，嵌入在`<bean>`标签内部提供构造参数，如下：
+
+```xml
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl">
+<constructor-arg name="name" value="xijuangu"/>
+<constructor-arg name="age" value="21"/>
+</bean>
+```
+
+#### 工厂方式实例化
+
+工厂方式实例化Bean又分为以下三种：
+
+- 静态工厂方法实例化Bean
+- 实例工厂方法实例化Bean
+- 实现FactoryBean规范延迟实例化Bean
+
+静态方法不需要现有对象，直接类名调用自定义的工厂内部的静态方法。实例工厂方法工厂内部的方法是非静态的，必须先有工厂对象，再用工厂对象去调用对应的方法。
+
+```java
+//工厂类
+public class UserDaoFactoryBean {
+    //静态工厂方法
+    public static UserDao UserDao(){
+    //可以在此编写一些其他逻辑代码
+        return new UserDaoImpl();
+    }
+}
+```
+
+```java
+ApplicationContext applicationContext =
+new ClassPathxmlApplicationContext("applicationContext.xml");
+Object userDao1 = applicationContext.getBean("userDao1");
+System.out.println(userDao1);
+```
+
+原先是Spring容器通过全限定名反射创建对象放到容器中：  
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean"/>`，创建的对象类型为`UserDaoFactoryBean`
+而现在是Spring容器调用类的静态方法，将返回的对象存储到容器中：
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean" factory-method="userDao"/>`，创建的对象类型为`UserDaoImpl`
+用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
+另外，有些通过静态工厂方式创建的第三方工具包中的类也可以通过这种方法交由Spring管理。
