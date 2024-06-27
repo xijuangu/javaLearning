@@ -594,3 +594,95 @@ System.out.println(userDao);
 这样配置会先自动创建一个工厂类，然后调用该工厂类的方法。
 用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前后进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
 另外，有些工具包会通过动态工厂方式创建bean，也即，在方法中创建bean，这种bean也可以通过这种方法交由Spring管理。
+
+### Bean的生命周期
+
+Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创建出对象之后，到Bean成为一个完整对象，最终存储到单例池中，这个过程被称为Spring Bean的生命周期。Spring Bean的生命周期大体上分为三个阶段：
+
+- Bean的实例化阶段：Spring框架会取出BeanDefinition的信息进行判断当前Bean的范围是否是singleton的，是否是延迟加载的，是否是FactoryBean等，最终将一个普通的singleton的Bean通过反射进行实例化；
+- Bean的初始化阶段 **(重点)**：Bean创建之后还仅仅是个"半成品"，还需要对Bean实例的属性进行填充、执行一些Aware接口方法、执行BeanPostProcessor方法、执行InitializingBean接口的初始化方法、执行自定义初始化init方法等。该阶段是Spring **最具技术含量和复杂度的阶段**，Aop增强功能，后面要学习的Spring的注解功能等、spring高频面试题Bean的循环引用问题都是在这个阶段体现的；
+- Bean的完成阶段：经过初始化阶段，Bean就成为了一个完整的Spring Bean，被存储到单例池singletonObjects的Map中去了，即完成了Spring Bean的整个生命周期。
+
+> 反射：
+> 反射是一种在运行时（而不是编译时）动态获取类的信息并操作类和对象的机制。通过反射，程序可以在运行时检查类的属性、方法、构造函数等信息，并对其进行操作。
+> 动态获取类信息：可以在运行时获取类的结构信息，如类名、方法、属性等。
+> 动态调用方法：可以在运行时调用对象的方法，而不需要在编译时确定。
+> 动态创建对象：可以在运行时创建对象，而不需要在编译时确定要创建的类。
+> 动态修改属性：可以在运行时修改对象的属性值，即使这些属性是私有的。
+>
+> 获取类的信息：
+>
+> ```java
+> // 通过类的全限定名获取 Class 对象
+> Class<?> clazz = Class.forName("com.example.ExampleBean");
+>
+> // 通过类的实例获取 Class 对象
+> ExampleBean example = new ExampleBean();
+> Class<?> clazz2 = example.getClass();
+>
+> // 通过类名获取 Class 对象
+> Class<?> clazz3 = ExampleBean.class;
+>
+> // 获取类的名称
+> String className = clazz.getName();
+> System.out.println("Class Name: " + className);
+> ```
+>
+> 获取构造方法：
+>
+> ```java
+> //使用getDeclaredConstructor()获取一个类中的所有构造函数
+> Constructor[] constructors = obj.getDeclaredConstructors();
+>
+> for(Constructor c : constructors) {
+>   //获取构造函数的名称
+>   System.out.println("构造函数名称： " + c.getName());
+>
+>   //获取构造函数的访问修饰符
+>   int modifier = c.getModifiers();
+>   System.out.println("修饰符： " + Modifier.toString(modifier));
+>
+>   //获取构造函数中的参数数量
+>   System.out.println("参数个数： " + c.getParameterCount());
+> }
+> ```
+>
+获取与调用类的方法
+
+```java
+// 获取所有方法
+Method[] methods = clazz.getDeclaredMethods();
+for (Method method : methods) {
+    System.out.println("Method Name: " + method.getName());
+}
+
+// 获取特定方法并调用
+Method setMethod = clazz.getDeclaredMethod("setPropertyName", String.class);
+setMethod.invoke(instance, "new value");
+System.out.println("Updated Instance: " + instance);
+
+// 获取特定方法并调用（包含返回值）
+Method getMethod = clazz.getDeclaredMethod("getPropertyName");
+Object returnValue = getMethod.invoke(instance);
+System.out.println("Return Value: " + returnValue);
+```
+
+获取与修改属性
+
+```java
+// 获取所有属性
+Field[] fields = clazz.getDeclaredFields();
+for (Field field : fields) {
+    System.out.println("Field Name: " + field.getName());
+}
+
+// 获取特定属性并修改
+Field field = clazz.getDeclaredField("propertyName");
+field.setAccessible(true); // 允许访问私有属性
+field.set(instance, "new value");
+System.out.println("Updated Instance: " + instance);
+
+// 获取属性值
+Object fieldValue = field.get(instance);
+System.out.println("Field Value: " + fieldValue);
+```
