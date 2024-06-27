@@ -533,14 +533,31 @@ public UserDaoImpl(String name, int age){}
 - 实例工厂方法实例化Bean
 - 实现FactoryBean规范延迟实例化Bean
 
-静态方法不需要现有对象，直接类名调用自定义的工厂内部的静态方法。实例工厂方法工厂内部的方法是非静态的，必须先有工厂对象，再用工厂对象去调用对应的方法。
+静态工厂方法不需要先创建工厂对象，而是直接调用**自定义的**工厂内部的静态方法来创建所需的对象。 ~~实例工厂方法中，工厂内部的方法是非静态的，实需要先创建工厂对象，然后通过该对象来调用工厂方法。~~
+
+> 自定义的工厂类：实现相对简单，通常只是一个普通的类，其中包含创建其他对象的方法（静态或非静态）。
+
+##### 静态工厂方法实例化Bean
+
+对工厂类的配置和普通bean一样
+
+```xml
+<!-- 
+1.静态工厂(不需要创建工厂本身)factory 
+2.factory-method 指定哪个方法是工厂方法
+3.class：指定静态工厂全类名-->
+<bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean" factory-method="getUserDao">
+<!-- 为方法指定参数-->
+<constructor-arg name="name" value="xijuangu"/>
+</bean>
+```
 
 ```java
 //工厂类
 public class UserDaoFactoryBean {
     //静态工厂方法
-    public static UserDao UserDao(){
-    //可以在此编写一些其他逻辑代码
+    public static UserDao getUserDao(String name){
+        //可以在此编写一些其他逻辑代码
         return new UserDaoImpl();
     }
 }
@@ -549,13 +566,31 @@ public class UserDaoFactoryBean {
 ```java
 ApplicationContext applicationContext =
 new ClassPathxmlApplicationContext("applicationContext.xml");
-Object userDao1 = applicationContext.getBean("userDao1");
-System.out.println(userDao1);
+Object userDao = applicationContext.getBean("userDao");
+System.out.println(userDao);
 ```
 
 原先是Spring容器通过全限定名反射创建对象放到容器中：  
-`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean"/>`，创建的对象类型为`UserDaoFactoryBean`
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean"/>`，返回的对象类型为`UserDaoFactoryBean`
 而现在是Spring容器调用类的静态方法，将返回的对象存储到容器中：
-`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean" factory-method="userDao"/>`，创建的对象类型为`UserDaoImpl`
-用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
-另外，有些通过静态工厂方式创建的第三方工具包中的类也可以通过这种方法交由Spring管理。
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean" factory-method="userDao"/>`，返回的对象类型为静态方法`userDao`的返回值类型`UserDaoImpl`
+用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前后进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
+另外，有些工具包会通过静态工厂方式创建bean，也即，在方法中创建bean，这种bean也可以通过这种方法交由Spring管理。
+
+##### 实例工厂方法实例化Bean
+
+~~静态工厂方法不需要先创建工厂对象，而是直接调用**自定义的**工厂内部的静态方法来创建所需的对象。~~ 实例工厂方法中，工厂内部的方法是非静态的，需要先创建工厂对象，然后通过该对象来调用工厂方法。
+所以要先配置工厂对象，然后配置工厂对象中的方法
+
+```xml
+<!-- 配置实例工厂Bean -->
+<bean id="userDaoFactoryBean2" class="com.itheima.factory.UserDaoFactoryBean2"/>
+<!-- 配置实例工厂Bean的哪个方法作为工厂方法 -->
+<bean id="userDao" factory-bean="userDaoFactoryBean2" factory-method="getUserDao">
+<constructor-arg name="name" value="xijuangu"/>
+</bean>
+```
+
+这样配置会先自动创建一个工厂类，然后调用该工厂类的方法。
+用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前后进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
+另外，有些工具包会通过动态工厂方式创建bean，也即，在方法中创建bean，这种bean也可以通过这种方法交由Spring管理。
