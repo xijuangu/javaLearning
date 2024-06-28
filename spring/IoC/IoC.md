@@ -797,4 +797,10 @@ public class UserServiceImpl implements UserService, BeanNameAware{
 
 ## IoC总结
 
+![alt text](image-7.png)
+
+![alt text](image-8.png)
+
+![alt text](image-9.png)
+
 ![alt text](image-6.png)
