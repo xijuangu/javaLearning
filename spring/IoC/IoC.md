@@ -647,42 +647,150 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 > }
 > ```
 >
-获取与调用类的方法
+> 获取与调用类的方法
+>
+> ```java
+>  // 获取所有方法
+>  Method[] methods = clazz.getDeclaredMethods();
+>  for (Method method : methods) {
+>      System.out.println("Method Name: " + method.getName());
+>  }
+>
+>   // 获取特定方法并调用
+>   Method setMethod = clazz.getDeclaredMethod("setPropertyName", String.class);
+>   setMethod.invoke(instance, "new value");
+>   System.out.println("Updated Instance: " + instance);
+>
+>   // 获取特定方法并调用（包含返回值）
+>   Method getMethod = clazz.getDeclaredMethod("getPropertyName");
+>   Object returnValue = getMethod.invoke(instance);
+>   System.out.println("Return Value: " + returnValue);
+>   ```
+>
+> 获取与修改属性
+>
+> ```java
+>    // 获取所有属性
+>    Field[] fields = clazz.getDeclaredFields();
+>    for (Field field : fields) {
+>        System.out.println("Field Name: " + field.getName());
+>    }
+>
+>    // 获取特定属性并修改
+>    Field field = clazz.getDeclaredField("propertyName");
+>    field.setAccessible(true); // 允许访问私有属性
+>    field.set(instance, "new value");
+>    System.out.println("Updated Instance: " + instance);
+>
+>    // 获取属性值
+>    Object fieldValue = field.get(instance);
+>    System.out.println("Field Value: " + fieldValue);
+> ```
+>
+### bean的初始化过程
+
+- bean实例的属性填充 *
+- Bean实例的属性填充
+- Aware接口属性注入
+- BeanPostProcessor的before()方法回调
+- InitializingBean接口的初始化方法回调
+- 自定义初始化方法init回调
+- BeanPostProcessor的after()方法回调
+
+#### bean实例的属性填充
+
+1. Spring 在解析配置文件时，会将每个Bean的定义信息（如类名、作用域、属性等）封装到一个 BeanDefinition 对象中，BeanDefinition 对象包含了所有需要创建和配置该 Bean 的信息。PropertyValues 是 BeanDefinition 的一个属性，用于存储该 Bean 的所有属性信息，包括属性值和引用。当 Spring 容器需要创建一个 Bean 时，它首先会根据 BeanDefinition 实例化该 Bean 的对象。容器通过反射调用 Bean 类的构造方法来创建 Bean 实例。创建 Bean 实例后，Spring 容器会检查 BeanDefinition 中的 PropertyValues，以确定是否有需要注入的属性。如果 PropertyValues 中包含属性注入信息，Spring 容器会通过反射调用相应的 setter 方法，将属性值或引用注入到 Bean 实例中。
+2. 注入的属性类型有普通属性、对象引用、集合。
+   - 注入普通属性，String、int或存储基本类型的集合时，直接通过set方法的反射设置进去；
+   - 注入单向对象引用属性时，从容器中getBean获取后通过set方法反射设置进去，如果容器中没有，则先创建被注入对象Bean实例（完成整个生命周期）后，再进行注入操作；
+   - 注入双向对象引用属性时，就比较复杂了，涉及了循环引用（循环依赖）问题。（重难点）
+
+> 引用：
+>
+> ```xml
+> <beans>
+>    <bean id="accountService" class="com.example.service.AccountServiceImpl">
+>         <!-- 将引用注入到AccountDao对象 -->
+>         <property name="accountDao" ref="accountDao"/>
+>     </bean>
+>     <bean id="accountDao" class="com.example.dao.AccountDaoImpl"/>
+> </beans>
+> ```
+
+##### 循环引用
+
+循环引用：多个实体之间相互依赖并形成闭环的情况就叫做"循环依赖"，也叫做"循环引用"
 
 ```java
-// 获取所有方法
-Method[] methods = clazz.getDeclaredMethods();
-for (Method method : methods) {
-    System.out.println("Method Name: " + method.getName());
+public class UserServiceImpl implements UserService{
+    public void setUserDao(UserDao userDao) {}
 }
-
-// 获取特定方法并调用
-Method setMethod = clazz.getDeclaredMethod("setPropertyName", String.class);
-setMethod.invoke(instance, "new value");
-System.out.println("Updated Instance: " + instance);
-
-// 获取特定方法并调用（包含返回值）
-Method getMethod = clazz.getDeclaredMethod("getPropertyName");
-Object returnValue = getMethod.invoke(instance);
-System.out.println("Return Value: " + returnValue);
+public class UserDaoImpl implements UserDao{
+    public void setUserService(UserService userService){}
+}
 ```
 
-获取与修改属性
+```xml
+<bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
+    <property name="userDao" ref="userDao"/>
+</bean>
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl">
+    <property name="userService" ref="userService"/>
+</bean>
+```
+
+一般情况下，UserService与UserDao实例化与初始化的顺序如下：
+
+![alt text](image-4.png)
+
+只有完整的Bean对象才会被存入单例池并被引用。因此，按上面的方法，如果是在循环引用的情况下，就会发生：UserService创建->在单例池中找UserDao以引用->没找到->UserDao创建->在单例池中找UserService以引用->没找到->UserService创建-> ...... 进入死循环
+
+![alt text](image-5.png)
+
+###### 解决方案：三级缓存
+
+Spring提供了三级缓存存储 完整Bean实例 和 半成品Bean实例 ，用于解决循环引用问题
+在DefaultListableBeanFactory的上四级父类DefaultSingletonBeanRegistry中提供如下三个Map：
 
 ```java
-// 获取所有属性
-Field[] fields = clazz.getDeclaredFields();
-for (Field field : fields) {
-    System.out.println("Field Name: " + field.getName());
+public class DefaultSingletonBeanRegistry ... {
+    //一级缓存
+    //最终存储单例Bean成品的容器，即实例化和初始化都完成的Bean
+    Map<String, Object> singletonObjects = new ConcurrentHashMap(256);
+    //二级缓存
+    //早期Bean单例池，缓存半成品对象，且当前对象已经被其他对象引用了
+    Map<String, Object> earlySingletonObjects = new ConcurrentHashMap(16);
+    //三级缓存
+    //单例Bean的工厂池，缓存半成品对象，对象未被引用，使用时在通过工厂创建Bean
+    Map<String, ObjectFactory<?>> singletonFactories = new HashMap(16);
 }
-
-// 获取特定属性并修改
-Field field = clazz.getDeclaredField("propertyName");
-field.setAccessible(true); // 允许访问私有属性
-field.set(instance, "new value");
-System.out.println("Updated Instance: " + instance);
-
-// 获取属性值
-Object fieldValue = field.get(instance);
-System.out.println("Field Value: " + fieldValue);
 ```
+
+![alt text](image-5.png)
+
+- 三级缓存：在上图第一步"实例化Service"时，为该半成品Service对象创建一个对应的ObjectFactory，在ObjectFactory的getObject()方法中再return该半成品Service对象，相当于在这个半成品对象外面套了个壳子存起来，需要用时调用ObjectFactory的getObject()方法。
+- 在上图中，接下来还要依次从一级、二级、三级缓存中找UserDao，如果都没有，再用如上方法创建一个UserDao存入三级缓存。
+- 然后还要再找容器中是否有UserService，在三级缓存中找到了它，然后注入：先把UserService从三级缓存中移除，再存入二级缓存中。然后就可以继续执行最后一步"直接赋值后方法返回，执行后续初始化环节"。
+
+##### 常用的Aware接口
+
+Aware接口是一种框架辅助属性注入的一种思想，其他框架中也可以看到类似的接口。框架具备高度封装性，我们接触到的一般都是业务代码，一个底层功能API不能轻易的获取到，但是这不意味着永远用不到这些对象，如果用到了，就可以使用框架提供的类似Aware的接口，让框架给我们注入该对象。
+|Aware接口 |回调方法 |作用|
+|---|---|---|
+|ServletContextAware |setServletContext(ServletContext context) |Spring框架回调方法注入ServletContext对象，web环境下才生效|
+|BeanFactoryAware |setBeanFactory(BeanFactory factory) |Spring框架回调方法注入beanFactory对象|
+|BeanNameAware |setBeanName(String beanName) |Spring框架回调方法注入当前Bean在容器中的beanName|
+|ApplicationContextAware |setApplicationContext(ApplicationContext applicationContext) |Spring框架回调方法注入applicationContext对象|
+
+```java
+public class UserServiceImpl implements UserService, BeanNameAware{
+    ...
+
+    @Override
+    public void setBeanName(String beanName){
+        System.out.println(beanName);
+    }
+}
+```
+
+通过上面这种方式，实现对应的属性注入。换句话说，在一个普通的UserServiceImpl Bean中想要去获取对应的BeanFactory、BeanName、ApplicationContext等属性，只能通过这种方法。
