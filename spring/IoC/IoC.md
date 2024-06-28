@@ -794,3 +794,7 @@ public class UserServiceImpl implements UserService, BeanNameAware{
 ```
 
 通过上面这种方式，实现对应的属性注入。换句话说，在一个普通的UserServiceImpl Bean中想要去获取对应的BeanFactory、BeanName、ApplicationContext等属性，只能通过这种方法。
+
+## IoC总结
+
+![alt text](image-6.png)
