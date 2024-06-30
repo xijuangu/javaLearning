@@ -19,7 +19,7 @@
 - Spring IOC，ApplicationContext 介绍 创建bean的方法+Beanfactory原理，bean的作用域及生命周期，依赖注入，bean的自动注入（Autowired）
 - AOP 原理及应用 实例编写
 - 注解 基本概念、原理、常用注解的使用：@Autowired、@Resource、@Controller、@Bean、@Component、@Value
-Springboot 起步依赖原理，配置文件分类，yaml文件介绍，配置项加载顺序，内置web服务器
+- Springboot 起步依赖原理，配置文件分类，yaml文件介绍，配置项加载顺序，内置web服务器
 
 ## SpringMVC
 
