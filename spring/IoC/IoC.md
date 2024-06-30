@@ -533,14 +533,31 @@ public UserDaoImpl(String name, int age){}
 - 实例工厂方法实例化Bean
 - 实现FactoryBean规范延迟实例化Bean
 
-静态方法不需要现有对象，直接类名调用自定义的工厂内部的静态方法。实例工厂方法工厂内部的方法是非静态的，必须先有工厂对象，再用工厂对象去调用对应的方法。
+静态工厂方法不需要先创建工厂对象，而是直接调用**自定义的**工厂内部的静态方法来创建所需的对象。 ~~实例工厂方法中，工厂内部的方法是非静态的，实需要先创建工厂对象，然后通过该对象来调用工厂方法。~~
+
+> 自定义的工厂类：实现相对简单，通常只是一个普通的类，其中包含创建其他对象的方法（静态或非静态）。
+
+##### 静态工厂方法实例化Bean
+
+对工厂类的配置和普通bean一样
+
+```xml
+<!-- 
+1.静态工厂(不需要创建工厂本身)factory 
+2.factory-method 指定哪个方法是工厂方法
+3.class：指定静态工厂全类名-->
+<bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean" factory-method="getUserDao">
+<!-- 为方法指定参数-->
+<constructor-arg name="name" value="xijuangu"/>
+</bean>
+```
 
 ```java
 //工厂类
 public class UserDaoFactoryBean {
     //静态工厂方法
-    public static UserDao UserDao(){
-    //可以在此编写一些其他逻辑代码
+    public static UserDao getUserDao(String name){
+        //可以在此编写一些其他逻辑代码
         return new UserDaoImpl();
     }
 }
@@ -549,13 +566,241 @@ public class UserDaoFactoryBean {
 ```java
 ApplicationContext applicationContext =
 new ClassPathxmlApplicationContext("applicationContext.xml");
-Object userDao1 = applicationContext.getBean("userDao1");
-System.out.println(userDao1);
+Object userDao = applicationContext.getBean("userDao");
+System.out.println(userDao);
 ```
 
 原先是Spring容器通过全限定名反射创建对象放到容器中：  
-`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean"/>`，创建的对象类型为`UserDaoFactoryBean`
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean"/>`，返回的对象类型为`UserDaoFactoryBean`
 而现在是Spring容器调用类的静态方法，将返回的对象存储到容器中：
-`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean" factory-method="userDao"/>`，创建的对象类型为`UserDaoImpl`
-用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
-另外，有些通过静态工厂方式创建的第三方工具包中的类也可以通过这种方法交由Spring管理。
+`<bean id="userDao1" class="com.itheima.factory.UserDaoFactoryBean" factory-method="userDao"/>`，返回的对象类型为静态方法`userDao`的返回值类型`UserDaoImpl`
+用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前后进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
+另外，有些工具包会通过静态工厂方式创建bean，也即，在方法中创建bean，这种bean也可以通过这种方法交由Spring管理。
+
+##### 实例工厂方法实例化Bean
+
+~~静态工厂方法不需要先创建工厂对象，而是直接调用**自定义的**工厂内部的静态方法来创建所需的对象。~~ 实例工厂方法中，工厂内部的方法是非静态的，需要先创建工厂对象，然后通过该对象来调用工厂方法。
+所以要先配置工厂对象，然后配置工厂对象中的方法
+
+```xml
+<!-- 配置实例工厂Bean -->
+<bean id="userDaoFactoryBean2" class="com.itheima.factory.UserDaoFactoryBean2"/>
+<!-- 配置实例工厂Bean的哪个方法作为工厂方法 -->
+<bean id="userDao" factory-bean="userDaoFactoryBean2" factory-method="getUserDao">
+<constructor-arg name="name" value="xijuangu"/>
+</bean>
+```
+
+这样配置会先自动创建一个工厂类，然后调用该工厂类的方法。
+用这种方式创建Bean对象不仅能灵活选择想要创建的对象类型，也能在创建对象前后进行其他业务逻辑操作，这个操作将与创建该对象的操作绑死。原本的方式则做不到这一点。  
+另外，有些工具包会通过动态工厂方式创建bean，也即，在方法中创建bean，这种bean也可以通过这种方法交由Spring管理。
+
+### Bean的生命周期
+
+Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创建出对象之后，到Bean成为一个完整对象，最终存储到单例池中，这个过程被称为Spring Bean的生命周期。Spring Bean的生命周期大体上分为三个阶段：
+
+- Bean的实例化阶段：Spring框架会取出BeanDefinition的信息进行判断当前Bean的范围是否是singleton的，是否是延迟加载的，是否是FactoryBean等，最终将一个普通的singleton的Bean通过反射进行实例化；
+- Bean的初始化阶段 **(重点)**：Bean创建之后还仅仅是个"半成品"，还需要对Bean实例的属性进行填充、执行一些Aware接口方法、执行BeanPostProcessor方法、执行InitializingBean接口的初始化方法、执行自定义初始化init方法等。该阶段是Spring **最具技术含量和复杂度的阶段**，Aop增强功能，后面要学习的Spring的注解功能等、spring高频面试题Bean的循环引用问题都是在这个阶段体现的；
+- Bean的完成阶段：经过初始化阶段，Bean就成为了一个完整的Spring Bean，被存储到单例池singletonObjects的Map中去了，即完成了Spring Bean的整个生命周期。
+
+> 反射：
+> 反射是一种在运行时（而不是编译时）动态获取类的信息并操作类和对象的机制。通过反射，程序可以在运行时检查类的属性、方法、构造函数等信息，并对其进行操作。
+> 动态获取类信息：可以在运行时获取类的结构信息，如类名、方法、属性等。
+> 动态调用方法：可以在运行时调用对象的方法，而不需要在编译时确定。
+> 动态创建对象：可以在运行时创建对象，而不需要在编译时确定要创建的类。
+> 动态修改属性：可以在运行时修改对象的属性值，即使这些属性是私有的。
+>
+> 获取类的信息：
+>
+> ```java
+> // 通过类的全限定名获取 Class 对象
+> Class<?> clazz = Class.forName("com.example.ExampleBean");
+>
+> // 通过类的实例获取 Class 对象
+> ExampleBean example = new ExampleBean();
+> Class<?> clazz2 = example.getClass();
+>
+> // 通过类名获取 Class 对象
+> Class<?> clazz3 = ExampleBean.class;
+>
+> // 获取类的名称
+> String className = clazz.getName();
+> System.out.println("Class Name: " + className);
+> ```
+>
+> 获取构造方法：
+>
+> ```java
+> //使用getDeclaredConstructor()获取一个类中的所有构造函数
+> Constructor[] constructors = obj.getDeclaredConstructors();
+>
+> for(Constructor c : constructors) {
+>   //获取构造函数的名称
+>   System.out.println("构造函数名称： " + c.getName());
+>
+>   //获取构造函数的访问修饰符
+>   int modifier = c.getModifiers();
+>   System.out.println("修饰符： " + Modifier.toString(modifier));
+>
+>   //获取构造函数中的参数数量
+>   System.out.println("参数个数： " + c.getParameterCount());
+> }
+> ```
+>
+> 获取与调用类的方法
+>
+> ```java
+>  // 获取所有方法
+>  Method[] methods = clazz.getDeclaredMethods();
+>  for (Method method : methods) {
+>      System.out.println("Method Name: " + method.getName());
+>  }
+>
+>   // 获取特定方法并调用
+>   Method setMethod = clazz.getDeclaredMethod("setPropertyName", String.class);
+>   setMethod.invoke(instance, "new value");
+>   System.out.println("Updated Instance: " + instance);
+>
+>   // 获取特定方法并调用（包含返回值）
+>   Method getMethod = clazz.getDeclaredMethod("getPropertyName");
+>   Object returnValue = getMethod.invoke(instance);
+>   System.out.println("Return Value: " + returnValue);
+>   ```
+>
+> 获取与修改属性
+>
+> ```java
+>    // 获取所有属性
+>    Field[] fields = clazz.getDeclaredFields();
+>    for (Field field : fields) {
+>        System.out.println("Field Name: " + field.getName());
+>    }
+>
+>    // 获取特定属性并修改
+>    Field field = clazz.getDeclaredField("propertyName");
+>    field.setAccessible(true); // 允许访问私有属性
+>    field.set(instance, "new value");
+>    System.out.println("Updated Instance: " + instance);
+>
+>    // 获取属性值
+>    Object fieldValue = field.get(instance);
+>    System.out.println("Field Value: " + fieldValue);
+> ```
+>
+### bean的初始化过程
+
+- bean实例的属性填充 *
+- Bean实例的属性填充
+- Aware接口属性注入
+- BeanPostProcessor的before()方法回调
+- InitializingBean接口的初始化方法回调
+- 自定义初始化方法init回调
+- BeanPostProcessor的after()方法回调
+
+#### bean实例的属性填充
+
+1. Spring 在解析配置文件时，会将每个Bean的定义信息（如类名、作用域、属性等）封装到一个 BeanDefinition 对象中，BeanDefinition 对象包含了所有需要创建和配置该 Bean 的信息。PropertyValues 是 BeanDefinition 的一个属性，用于存储该 Bean 的所有属性信息，包括属性值和引用。当 Spring 容器需要创建一个 Bean 时，它首先会根据 BeanDefinition 实例化该 Bean 的对象。容器通过反射调用 Bean 类的构造方法来创建 Bean 实例。创建 Bean 实例后，Spring 容器会检查 BeanDefinition 中的 PropertyValues，以确定是否有需要注入的属性。如果 PropertyValues 中包含属性注入信息，Spring 容器会通过反射调用相应的 setter 方法，将属性值或引用注入到 Bean 实例中。
+2. 注入的属性类型有普通属性、对象引用、集合。
+   - 注入普通属性，String、int或存储基本类型的集合时，直接通过set方法的反射设置进去；
+   - 注入单向对象引用属性时，从容器中getBean获取后通过set方法反射设置进去，如果容器中没有，则先创建被注入对象Bean实例（完成整个生命周期）后，再进行注入操作；
+   - 注入双向对象引用属性时，就比较复杂了，涉及了循环引用（循环依赖）问题。（重难点）
+
+> 引用：
+>
+> ```xml
+> <beans>
+>    <bean id="accountService" class="com.example.service.AccountServiceImpl">
+>         <!-- 将引用注入到AccountDao对象 -->
+>         <property name="accountDao" ref="accountDao"/>
+>     </bean>
+>     <bean id="accountDao" class="com.example.dao.AccountDaoImpl"/>
+> </beans>
+> ```
+
+##### 循环引用
+
+循环引用：多个实体之间相互依赖并形成闭环的情况就叫做"循环依赖"，也叫做"循环引用"
+
+```java
+public class UserServiceImpl implements UserService{
+    public void setUserDao(UserDao userDao) {}
+}
+public class UserDaoImpl implements UserDao{
+    public void setUserService(UserService userService){}
+}
+```
+
+```xml
+<bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
+    <property name="userDao" ref="userDao"/>
+</bean>
+<bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl">
+    <property name="userService" ref="userService"/>
+</bean>
+```
+
+一般情况下，UserService与UserDao实例化与初始化的顺序如下：
+
+![alt text](image-4.png)
+
+只有完整的Bean对象才会被存入单例池并被引用。因此，按上面的方法，如果是在循环引用的情况下，就会发生：UserService创建->在单例池中找UserDao以引用->没找到->UserDao创建->在单例池中找UserService以引用->没找到->UserService创建-> ...... 进入死循环
+
+![alt text](image-5.png)
+
+###### 解决方案：三级缓存
+
+Spring提供了三级缓存存储 完整Bean实例 和 半成品Bean实例 ，用于解决循环引用问题
+在DefaultListableBeanFactory的上四级父类DefaultSingletonBeanRegistry中提供如下三个Map：
+
+```java
+public class DefaultSingletonBeanRegistry ... {
+    //一级缓存
+    //最终存储单例Bean成品的容器，即实例化和初始化都完成的Bean
+    Map<String, Object> singletonObjects = new ConcurrentHashMap(256);
+    //二级缓存
+    //早期Bean单例池，缓存半成品对象，且当前对象已经被其他对象引用了
+    Map<String, Object> earlySingletonObjects = new ConcurrentHashMap(16);
+    //三级缓存
+    //单例Bean的工厂池，缓存半成品对象，对象未被引用，使用时在通过工厂创建Bean
+    Map<String, ObjectFactory<?>> singletonFactories = new HashMap(16);
+}
+```
+
+![alt text](image-5.png)
+
+- 三级缓存：在上图第一步"实例化Service"时，为该半成品Service对象创建一个对应的ObjectFactory，在ObjectFactory的getObject()方法中再return该半成品Service对象，相当于在这个半成品对象外面套了个壳子存起来，需要用时调用ObjectFactory的getObject()方法。
+- 在上图中，接下来还要依次从一级、二级、三级缓存中找UserDao，如果都没有，再用如上方法创建一个UserDao存入三级缓存。
+- 然后还要再找容器中是否有UserService，在三级缓存中找到了它，然后注入：先把UserService从三级缓存中移除，再存入二级缓存中。然后就可以继续执行最后一步"直接赋值后方法返回，执行后续初始化环节"。
+
+##### 常用的Aware接口
+
+Aware接口是一种框架辅助属性注入的一种思想，其他框架中也可以看到类似的接口。框架具备高度封装性，我们接触到的一般都是业务代码，一个底层功能API不能轻易的获取到，但是这不意味着永远用不到这些对象，如果用到了，就可以使用框架提供的类似Aware的接口，让框架给我们注入该对象。
+|Aware接口 |回调方法 |作用|
+|---|---|---|
+|ServletContextAware |setServletContext(ServletContext context) |Spring框架回调方法注入ServletContext对象，web环境下才生效|
+|BeanFactoryAware |setBeanFactory(BeanFactory factory) |Spring框架回调方法注入beanFactory对象|
+|BeanNameAware |setBeanName(String beanName) |Spring框架回调方法注入当前Bean在容器中的beanName|
+|ApplicationContextAware |setApplicationContext(ApplicationContext applicationContext) |Spring框架回调方法注入applicationContext对象|
+
+```java
+public class UserServiceImpl implements UserService, BeanNameAware{
+    ...
+
+    @Override
+    public void setBeanName(String beanName){
+        System.out.println(beanName);
+    }
+}
+```
+
+通过上面这种方式，实现对应的属性注入。换句话说，在一个普通的UserServiceImpl Bean中想要去获取对应的BeanFactory、BeanName、ApplicationContext等属性，只能通过这种方法。
+
+## IoC总结
+
+![alt text](image-7.png)
+
+![alt text](image-8.png)
+
+![alt text](image-9.png)
+
+![alt text](image-6.png)
