@@ -1,6 +1,6 @@
 # Spring Boot
 
-> 全篇带下划线的为 Spring 部分中介绍过的内容
+> 全篇带下划线的为 Spring IoC 部分中介绍过的内容
 
 ## 注解
 
