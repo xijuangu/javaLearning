@@ -7,7 +7,7 @@
 1. 层与层之间紧密耦合在一起，接口与具体实现紧密耦合在一起。如果我后面想切换某一个接口的实现，就必须修改多处源代码。
    - 解决方案：程序代码中不要手动new对象，第三方根据要求为程序员提供需要的Bean对象
   
-    ```java
+    ```java{.line-numbers}
     UserDao userDao = new UserDaoImpl();    // 如果有多个Impl1、Impl2...用于多种实现方式，则每次切换实现方式都要修改此处的代码
     userDao.updateUserInfo(user);
     ```
@@ -15,7 +15,7 @@
 2. 通用的事务功能与日志功能耦合在业务代码中
    - 事务功能：事务功能是指在一个需要对数据库进行操作的功能中，要确保一组操作要么全部成功，要么全部失败，以保持数据一致性和完整性。例如实现一个简单的银行转账功能，从账户A转账100元到账户B。这个操作涉及两个数据库操作：从账户A中扣除100元、向账户B中添加100元。这两个操作必须同时成功或者同时失败，否则会导致数据不一致。通过事务管理可以确保这一点。
   
-        ```java
+        ```java{.line-numbers}
         @Service
         public class BankService {
 
@@ -32,7 +32,7 @@
 
    - 日志功能：日志功能是记录应用程序运行时的信息，包括普通信息、警告、错误等，以便于调试和监控。假设你要记录一个方法调用的开始和结束时间，就可以使用日志功能来记录这些信息：
 
-        ```java
+        ```java{.line-numbers}
         @Service
         public class LoggingService {
             private static final Logger logger = LoggerFactory.getLogger(LoggingService.class);
@@ -50,7 +50,7 @@
      - 在bean实例化之后但在属性注入之前，Spring会通过BeanPostProcessor接口的实现类来检查该bean是否需要代理。
      - 如果需要代理，Spring会创建该bean的代理对象，并将代理对象注册到Spring容器中，替换原始的bean。代理对象可以说是升级版的bean对象，比普通的bean对象功能更强大一些。
 
-## Ioc、DI和AOP思想的提出和框架概念
+## IoC、DI和AOP思想的提出和框架概念
 
 ### IoC
 
@@ -75,7 +75,7 @@ Dependency Injection 依赖注入，某个完整Bean需要依赖于其他Bean（
 2) 在程序中，通过BeanFactory获得UserDao
 3) 在程序中，将UserDao设置给UserService
 
-```java
+```java{.line-numbers}
 public static void main(String[] args){
     //创建BeanFactory并读取、加载bean配置文件
     BeanFactory beanFactory = new BeanFactory("beans.xml");
@@ -120,7 +120,7 @@ AOP，Aspect Oriented Programming，面向切面编程，是对面向对象编�
 
 在OOP中实现一个日志的功能：
 
-```java
+```java{.line-numbers}
 package com.example.service;
 
 public class MyService {
@@ -147,7 +147,7 @@ public class MyService {
 
 可以看出OOP模式下的日志功能的实现造成了很大的代码冗余，且相关的代码非常分散，难以维护，不易扩展。而以下是AOP模式下的实现：
 
-```java
+```java{.line-numbers}
 @Aspect
 @Component
 public class LoggingAspect {        // 日志功能的实现
@@ -164,7 +164,7 @@ public class LoggingAspect {        // 日志功能的实现
 }
 ```
 
-```java
+```java{.line-numbers}
 @Service
 public class MyService {            // 服务类的实现
 
@@ -182,7 +182,7 @@ public class MyService {            // 服务类的实现
 }
 ```
 
-```java
+```java{.line-numbers}
 public class AopTest {
     // 测试代码
     public static void main(String[] args) {        
@@ -202,8 +202,7 @@ public class AopTest {
 框架的基本特点：
 
 - 框架（Framework），是基于基础技术之上，从众多业务中抽取出的通用解决方案；
-- 框架是一个半成品，使用框架规定的语法开发可以提高开发效率，可以用简单的代码就能完成复杂的基础
-业务；
+- 框架是一个半成品，使用框架规定的语法开发可以提高开发效率，可以用简单的代码就能完成复杂的基础业务；
 - 框架内部使用大量的设计模式、算法、底层代码操作技术，如反射、内省、xml解析、注解解析等；
 - 框架一般都具备扩展性；
 - 有了框架，我们可以将精力尽可能的投入在纯业务开发上而不用去费心技术实现以及一些辅助业务。
@@ -226,7 +225,9 @@ public class AopTest {
 
 ### 导入Spring的jar包或Maven坐标
 
-```xml
+Maven坐标：
+
+```xml{.line-numbers}
 <!--Spring核心-->
 <dependency>
 <groupId>org.springframework</groupId>
@@ -237,17 +238,17 @@ public class AopTest {
 
 ### 定义UserService接口及其UserServiceImpl实现类
 
-```java
+```java{.line-numbers}
 public interface UserService {}
 ```
 
-```java
+```java{.line-numbers}
 public class UserServiceImpl implements UserService {}
 ```
 
 ### 创建beans.xml配置文件，将UserServiceImpl的信息配置到该xml中
 
-```xml
+```xml{.line-numbers}
 <bean id="userService" class="com.itheima.service.impl.UserServiceImpl"></bean>
 ```
 
@@ -255,7 +256,7 @@ public class UserServiceImpl implements UserService {}
 
 ### 编写测试代码，创建BeanFactory，加载配置文件，获取UserService实例对象
 
-```java
+```java{.line-numbers}
 //创建BeanFactory工厂对象
 DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
@@ -282,36 +283,36 @@ System.out.println(userService);
 
 1. 定义UserDao接口与UserDaoImpl实现类
 
-    ```java
+    ```java{.line-numbers}
     public interface UserDao {}
     ```
 
-    ```java
+    ```java{.line-numbers}
     public class UserDaoImpl implements UserDao {}
     ```
 
 2. 修改UserServiceImpl代码，添加一个setUserDao(UserDao userDao)用于接收注入的对象
 
-   ```java
+   ```java{.line-numbers}
     public class UserServiceImpl implements UserService {
         private UserDao userDao;
 
         public void setUserDao(UserDao userDao) {
-        System.out.println("BeanFactory自动调用该方法" + userDao);
-        this.userDao = userDao;
+            System.out.println("BeanFactory自动调用该方法" + userDao);
+            this.userDao = userDao;
         }
     }
    ```
 
 3. 定义UserDao接口及其UserDaoImpl实现类
 
-    ```xml
+    ```xml{.line-numbers}
     <bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
-    <property name="userDao" ref="userDao"></property>
-    <!--property name是上面UserService中setUserDao方法后面的"userDao"，首字母要小写。property ref是引用，在当前容器中找到对应的bean，也就是下面的id为userDao的bean.
-    -->
-    <!--把当前容器中找到的名为userDao的bean设置给UserServiceImpl中的名字为setUserDao的方法。-->
-    <!--命名与规则是约定好的，不可随意修改-->
+        <property name="userDao" ref="userDao"></property>
+        <!--property name是上面UserService中setUserDao方法后面的"userDao"，首字母要小写。
+        property ref是引用，在当前容器中找到对应的bean，也就是下面的id为userDao的bean.-->
+        <!--把当前容器中找到的名为userDao的bean设置给UserServiceImpl中的名字为setUserDao的方法。-->
+        <!--命名与规则是约定好的，不可随意修改-->
     </bean>
 
     <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl"></bean>
@@ -319,7 +320,7 @@ System.out.println(userService);
 
 4. 编写测试代码，创建BeanFactory，加载配置文件，获取UserService实例对象
 
-    ```java
+    ```java{.line-numbers}
     DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
     XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
     reader.loadBeanDefinitions("beans.xml");
@@ -331,7 +332,7 @@ System.out.println(userService);
 
 ApplicationContext 称为Spring容器，内部封装了BeanFactory，比BeanFactory功能更丰富更强大，使用 ApplicationContext 进行开发时，xml配置文件的名称习惯写成applicationContext.xml
 
-```java
+```java{.line-numbers}
 //创建ApplicationContext,加载配置文件，实例化容器
 ApplicationContext applicationContext = 
 new ClassPathxmlApplicationContext("applicationContext.xml");
@@ -344,8 +345,7 @@ System.out.println(userService);
 
 1. BeanFactory是Spring的早期接口，称为Spring的Bean工厂，ApplicationContext是后期更高级接口，称之为Spring 容器；
 2. ApplicationContext在BeanFactory基础上对功能进行了扩展，例如：监听功能、国际化功能等。BeanFactory的API更偏向底层，ApplicationContext的API大多数是对这些底层API的封装；
-3. Bean创建的主要逻辑和功能都被封装在BeanFactory中，ApplicationContext不仅继承了BeanFactory，而且
-ApplicationContext内部还维护着BeanFactory的引用，所以，ApplicationContext与BeanFactory既有继承关系，又有融合关系。
+3. Bean创建的主要逻辑和功能都被封装在BeanFactory中，ApplicationContext不仅继承了BeanFactory，而且ApplicationContext内部还维护着BeanFactory的引用，所以，ApplicationContext与BeanFactory既有继承关系，又有融合关系。
 4. Bean的初始化时机不同，原始BeanFactory是在首次调用getBean时才进行Bean的创建，而ApplicationContext则是配置文件加载，容器一创建就将Bean都实例化并初始化好。
 
 ### BeanFactory的继承体系
@@ -368,7 +368,7 @@ BeanFactory是核心接口，项目运行过程中肯定有具体实现参与，
 
 - 如果Spring基础环境中加入了其他组件解决方案，如web层解决方案，即导入spring-web坐标，此时ApplicationContext的继承体系
 
-    ```xml
+    ```xml{.line-numbers}
     <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-web</artifactId>
@@ -400,7 +400,7 @@ BeanFactory是核心接口，项目运行过程中肯定有具体实现参与，
 
 ### Bean的基础配置
 
-```xml
+```xml{.line-numbers}
 <bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
     <property name="userDao" ref="userDao"></property>
 </bean>
@@ -416,13 +416,13 @@ BeanFactory是核心接口，项目运行过程中肯定有具体实现参与，
 
 可以为当前Bean指定多个别名，别名在容器外单独存储，在aliasMap中分别指向对应的beanName。根据别名也可以获得Bean对象：
 
-```xml
+```xml{.line-numbers}
 <bean id="userDao" name="aaa,bbb" class="com.itheima.dao.impl.UserDaoImpl"/>
 ```
 
 此时多个名称都可以获得UserDaoImpl实例对象
 
-```java
+```java{.line-numbers}
 applicationContext.getBean("userDao");
 applicationContext.getBean("aaa");
 applicationContext.getBean("bbb");
@@ -430,7 +430,7 @@ applicationContext.getBean("bbb");
 
 若不配置id，只配置别名name，则默认选择第一个别名作为beanName
 
-```xml
+```xml{.line-numbers}
 <bean name="aaa,bbb" class="com.itheima.dao.impl.UserDaoImpl"/>
 <!--此时aaa默认为beanName-->
 ```
@@ -448,7 +448,7 @@ applicationContext.getBean("bbb");
 
 在BeanFactory中无效，因为它本来就是在调用时再创建的，而ApplicationContext默认在创建容器时就创建Bean实例。
 
-```xml
+```xml{.line-numbers}
 <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl" lazy-init="true"/>
 ```
 
@@ -456,7 +456,7 @@ applicationContext.getBean("bbb");
 
 Bean在被实例化后，可以执行指定的初始化方法完成一些初始化的操作，Bean在销毁之前也可以执行指定的销毁方法完成一些操作。
 
-```xml
+```xml{.line-numbers}
 <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl" init-method="init" destroy-method="destroy"/>
 ```
 
@@ -511,17 +511,17 @@ Spring的实例化方式主要如下两种：
 
 构造方式实例化Bean又分为无参构造方法实例化和有参构造方法实例化，Spring中配置的`<bean>`几乎都是无参构造该方式，此处不再赘述。下面介绍有参构造方法实例化Bean
 
-```java
+```java{.line-numbers}
 public UserDaoImpl(){}
 public UserDaoImpl(String name, int age){}
 ```
 
 有参构造在实例化Bean时，需要参数的注入，通过`<constructor-arg>`标签，嵌入在`<bean>`标签内部提供构造参数，如下：
 
-```xml
+```xml{.line-numbers}
 <bean id="userDao" class="com.itheima.dao.impl.UserDaoImpl">
-<constructor-arg name="name" value="xijuangu"/>
-<constructor-arg name="age" value="21"/>
+    <constructor-arg name="name" value="xijuangu"/>
+    <constructor-arg name="age" value="21"/>
 </bean>
 ```
 
@@ -541,18 +541,18 @@ public UserDaoImpl(String name, int age){}
 
 对工厂类的配置和普通bean一样
 
-```xml
+```xml{.line-numbers}
 <!-- 
 1.静态工厂(不需要创建工厂本身)factory 
 2.factory-method 指定哪个方法是工厂方法
 3.class：指定静态工厂全类名-->
 <bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean" factory-method="getUserDao">
-<!-- 为方法指定参数-->
-<constructor-arg name="name" value="xijuangu"/>
+    <!-- 为方法指定参数-->
+    <constructor-arg name="name" value="xijuangu"/>
 </bean>
 ```
 
-```java
+```java{.line-numbers}
 //工厂类
 public class UserDaoFactoryBean {
     //静态工厂方法
@@ -563,7 +563,7 @@ public class UserDaoFactoryBean {
 }
 ```
 
-```java
+```java{.line-numbers}
 ApplicationContext applicationContext =
 new ClassPathxmlApplicationContext("applicationContext.xml");
 Object userDao = applicationContext.getBean("userDao");
@@ -582,12 +582,12 @@ System.out.println(userDao);
 ~~静态工厂方法不需要先创建工厂对象，而是直接调用**自定义的**工厂内部的静态方法来创建所需的对象。~~ 实例工厂方法中，工厂内部的方法是非静态的，需要先创建工厂对象，然后通过该对象来调用工厂方法。
 所以要先配置工厂对象，然后配置工厂对象中的方法
 
-```xml
+```xml{.line-numbers}
 <!-- 配置实例工厂Bean -->
 <bean id="userDaoFactoryBean2" class="com.itheima.factory.UserDaoFactoryBean2"/>
 <!-- 配置实例工厂Bean的哪个方法作为工厂方法 -->
 <bean id="userDao" factory-bean="userDaoFactoryBean2" factory-method="getUserDao">
-<constructor-arg name="name" value="xijuangu"/>
+    <constructor-arg name="name" value="xijuangu"/>
 </bean>
 ```
 
@@ -600,7 +600,7 @@ System.out.println(userDao);
 Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创建出对象之后，到Bean成为一个完整对象，最终存储到单例池中，这个过程被称为Spring Bean的生命周期。Spring Bean的生命周期大体上分为三个阶段：
 
 - Bean的实例化阶段：Spring框架会取出BeanDefinition的信息进行判断当前Bean的范围是否是singleton的，是否是延迟加载的，是否是FactoryBean等，最终将一个普通的singleton的Bean通过反射进行实例化；
-- Bean的初始化阶段 **(重点)**：Bean创建之后还仅仅是个"半成品"，还需要对Bean实例的属性进行填充、执行一些Aware接口方法、执行BeanPostProcessor方法、执行InitializingBean接口的初始化方法、执行自定义初始化init方法等。该阶段是Spring **最具技术含量和复杂度的阶段**，Aop增强功能，后面要学习的Spring的注解功能等、spring高频面试题Bean的循环引用问题都是在这个阶段体现的；
+- Bean的初始化阶段 **(重点)**：Bean创建之后还仅仅是个"半成品"，还需要对Bean实例的属性进行填充、执行一些Aware接口方法、执行BeanPostProcessor方法、执行InitializingBean接口的初始化方法、执行自定义初始化init方法等。该阶段是Spring **最具技术含量和复杂度的阶段**，AOP增强功能，后面要学习的Spring的注解功能等、spring高频面试题Bean的循环引用问题都是在这个阶段体现的；
 - Bean的完成阶段：经过初始化阶段，Bean就成为了一个完整的Spring Bean，被存储到单例池singletonObjects的Map中去了，即完成了Spring Bean的整个生命周期。
 
 > 反射：
@@ -612,7 +612,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 >
 > 获取类的信息：
 >
-> ```java
+> ```java{.line-numbers}
 > // 通过类的全限定名获取 Class 对象
 > Class<?> clazz = Class.forName("com.example.ExampleBean");
 >
@@ -630,7 +630,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 >
 > 获取构造方法：
 >
-> ```java
+> ```java{.line-numbers}
 > //使用getDeclaredConstructor()获取一个类中的所有构造函数
 > Constructor[] constructors = obj.getDeclaredConstructors();
 >
@@ -649,7 +649,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 >
 > 获取与调用类的方法
 >
-> ```java
+> ```java{.line-numbers}
 >  // 获取所有方法
 >  Method[] methods = clazz.getDeclaredMethods();
 >  for (Method method : methods) {
@@ -669,7 +669,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 >
 > 获取与修改属性
 >
-> ```java
+> ```java{.line-numbers}
 >    // 获取所有属性
 >    Field[] fields = clazz.getDeclaredFields();
 >    for (Field field : fields) {
@@ -707,7 +707,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 
 > 引用：
 >
-> ```xml
+> ```xml{.line-numbers}
 > <beans>
 >    <bean id="accountService" class="com.example.service.AccountServiceImpl">
 >         <!-- 将引用注入到AccountDao对象 -->
@@ -721,7 +721,7 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 
 循环引用：多个实体之间相互依赖并形成闭环的情况就叫做"循环依赖"，也叫做"循环引用"
 
-```java
+```java{.line-numbers}
 public class UserServiceImpl implements UserService{
     public void setUserDao(UserDao userDao) {}
 }
@@ -730,7 +730,7 @@ public class UserDaoImpl implements UserDao{
 }
 ```
 
-```xml
+```xml{.line-numbers}
 <bean id="userService" class="com.itheima.service.impl.UserServiceImpl">
     <property name="userDao" ref="userDao"/>
 </bean>
@@ -752,7 +752,7 @@ public class UserDaoImpl implements UserDao{
 Spring提供了三级缓存存储 完整Bean实例 和 半成品Bean实例 ，用于解决循环引用问题
 在DefaultListableBeanFactory的上四级父类DefaultSingletonBeanRegistry中提供如下三个Map：
 
-```java
+```java{.line-numbers}
 public class DefaultSingletonBeanRegistry ... {
     //一级缓存
     //最终存储单例Bean成品的容器，即实例化和初始化都完成的Bean
@@ -782,7 +782,7 @@ Aware接口是一种框架辅助属性注入的一种思想，其他框架中也
 |BeanNameAware |setBeanName(String beanName) |Spring框架回调方法注入当前Bean在容器中的beanName|
 |ApplicationContextAware |setApplicationContext(ApplicationContext applicationContext) |Spring框架回调方法注入applicationContext对象|
 
-```java
+```java{.line-numbers}
 public class UserServiceImpl implements UserService, BeanNameAware{
     ...
 
