@@ -179,3 +179,85 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
         }
     }
     ```
+
+## Spring Boot起步依赖原理
+
+首先明确，起步依赖中引用的是项目的坐标，坐标中定义了版本信息。对项目的依赖可以继承。  
+
+`<parent>`，其中是父工程  
+`spring-boot-starter-parent`，其中定义了各种技术的版本信息，组合了一套最优搭配的技术版本。在各种starter中，定义了完成该功能需要的坐标合集，其中大部分信息来自父工程，其余的父工程中没有的就要自己写版本号，需要自己注意版本冲突。  
+`spring-boot-dependencies`是`spring-boot-starter-parent`的parent，它没有再上一级的parent。  
+`<dependencyManagement>`，版本锁定，在父工程内定义的带版本信息的坐标，子工程同项目不需要再写版本信息  
+`<properties>`，属性信息，是一堆技术版本信息  
+
+`sping-boot-stater-web`，它没有版本锁定，每一个引用的坐标内都有版本信息  
+`<dependencies>`，其中是该项目依赖的坐标  
+
+## 配置文件分类
+
+SpringBoot是基于约定的，所以很多配置都有默认值。如果想使用自己的配置替换默认配置的话，就需要使用`application.properties`或`application.yml(或.yaml)`进行配置，文件名必须是application，位置位于resources目录下，三种文件可以同时生效，优先级从高到底为`.properties` > `.yml` > `.yaml`。  
+
+### properties
+
+```properties
+server.port=8081
+```
+
+### yml
+
+- 最简洁，以数据为核心
+- 大小写敏感
+- 使用缩进表示层级关系，缩进不允许使用Tab，只允许使用空格，避免不同系统对应的空格数不同的问题。缩进的空格数目不重要，只要同层级元素左侧对齐即可
+- `#`表示注释
+
+```yml
+# 对象（map），键值对的集合
+server:
+  port: 8081    # 注意8081前面有个空格
+
+# 行内写法（少），也要注意两处空格
+server: {port: 8081}
+
+
+# 数组
+address: 
+    - 北京市
+    - 上海市
+
+# 行内写法（少）
+address: [北京市,上海市]
+
+
+# 纯量，单个不可再分的值
+msg1: 'hello \n world'    # 单引号不识别转义字符
+msg2: "hello \n world"    # 双引号识别转义字符
+
+# 参数引用
+msg3: ${msg1}
+```
+
+## 读取配置内容
+
+```java
+// 读取对象
+@Value("${server.port}")
+private String port;
+
+// 读取数组
+@Value("${address[0]}")
+private String address1;
+@Value("${address[1]}")
+private String address2;
+
+// 读取纯量
+@Value("${msg1}")
+private String msg1;
+
+
+// Enviroment对象方式
+@Autowired
+private Enviroment env;
+
+System.out.println(env.getProperty("server.port"));
+
+```
