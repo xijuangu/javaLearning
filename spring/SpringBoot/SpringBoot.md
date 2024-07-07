@@ -261,3 +261,25 @@ private Enviroment env;
 System.out.println(env.getProperty("server.port"));
 
 ```
+
+`@ConfiurationProperties`用于将配置内容和对象绑定  
+
+```yml
+server:
+  port1: 8081
+  port2: 8082
+  address: 
+    - 北京市
+    - 上海市
+```
+
+```java
+@Component      // 注册为Bean被spring管理
+@ConfigurationProperties(prefix = "server")     // prefix表示配置文件中的前缀
+public class ServerConfig {
+    priavte String port1;       // 属性名和配置文件中的key一致，会自动映射
+    private String port2;
+    priavte String[] address;   // 数组也一样获取
+    // ...
+    // 省略getter和setter
+}
