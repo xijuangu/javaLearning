@@ -69,6 +69,8 @@ ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(array));
 System.out.println("ArrayList elements: " + arrayList);
 ```
 
+**翻到最后有ArrayList的示例代码，可以先去看那个，试着运行一下看看。**
+
 ### LinkedList
 
 - 特点： 双向链表，元素之间通过指针连接。
@@ -90,6 +92,45 @@ Set<Integer> treeSet = new TreeSet<>();
 - 优点： 高效的查找和插入操作。
 - 缺点： 不保证顺序。
 
+```java{.line-numbers}
+package org.xijuangu;
+
+import java.util.HashSet;
+
+public class HashSetDemo {
+    public static void main(String[] args) {
+        HashSet<String> sites = new HashSet<>();
+        sites.add("google");
+        sites.add("facebook");
+        sites.add("twitter");
+        sites.add("youtube");
+        sites.add("google");        // 添加重复的元素无效
+        System.out.println(sites);
+
+        System.out.println("sites.contains(\"google\"): " + sites.contains("google"));
+
+        // 删除元素，成功返回true，失败返回false
+        System.out.println("sites.remove(\"google\"): " + sites.remove("google"));
+        System.out.println("google removed sites: " + sites);
+
+        System.out.println("sites.size(): " + sites.size());
+
+        sites.clear();
+        System.out.println("sites.clear(): " + sites);
+        System.out.println("sites.isEmpty(): " + sites.isEmpty());
+
+        sites.add("google");
+        sites.forEach(e -> {
+            if(e.equals("google")){
+                sites.add(e.toUpperCase());
+                sites.remove(e);
+            }
+        });
+        System.out.println(sites);
+    }
+}
+```
+
 ### TreeSet
 
 - 特点：TreeSet 是有序集合，底层基于红黑树实现，不允许重复元素。
@@ -110,6 +151,75 @@ Map<String, Integer> treeMap = new TreeMap<>();
 - 特点： 基于哈希表实现的键值对存储结构。
 - 优点： 高效的查找、插入和删除操作。
 - 缺点： 无序，不保证顺序。
+
+```java{.line-numbers}
+HashMap<Integer, String> Sites = new HashMap<>();
+```
+
+HashMap示例代码：
+
+```java
+package org.xijuangu;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+public class ForEachDemo {
+    public static void main(String[] args) {
+        
+        HashMap<Integer, String> sites = new HashMap<>();
+
+        sites.put(1, "google");
+        sites.put(3, "facebook");
+        sites.put(5, "yahoo");
+        System.out.println("sites: " + sites);
+
+        HashMap<Integer, String> copy = new HashMap<>(sites);   // sites.clone()是浅拷贝
+        System.out.println("copy created: " + copy);
+
+        System.out.println("key 5 in sites: " + sites.get(5));
+
+        sites.remove(5);
+        System.out.println("key 5 removed from sites: " + sites);
+
+        sites.clear();
+        System.out.println("sites cleared: " + sites);
+        System.out.println("sites.isEmpty(): " + sites.isEmpty());
+
+        System.out.println("size of sites: " + sites.size());
+        System.out.println("size of copy: " + copy.size());
+
+        copy.forEach((key, value) -> System.out.println(key + " = " + value));
+
+        sites.putAll(copy);
+        System.out.println("sites.putAll(copy): " + sites);
+
+        sites.replaceAll((key, value) -> {
+            if(key == 3)
+                return value.toUpperCase();
+            else
+                return value;
+        });
+        System.out.println("sites.replaceAll(key, value) toUpperCase: " + sites);
+
+        sites.replace(1, "newBing");
+        System.out.println("sites.replace(1, newBing): " + sites);
+
+        System.out.println("sites.containsKey(3): " + sites.containsKey(3));
+        System.out.println("sites.containsValve(\"baidu\"): " + sites.containsValue("baidu"));
+
+        //ArrayList<String> myArray = (ArrayList<String>)sites.values();
+        System.out.println("sites.values(): " + sites.values());
+        ArrayList<String> myArray = new ArrayList<String>(sites.values());
+        System.out.println("sites.values() 返回一个 Collection，可以用来创建列表: " + myArray);
+
+        System.out.println("sites.keySet(): " + sites.keySet());
+        System.out.println("sites.entrySet() 返回一个set: " + sites.entrySet());
+    }
+}
+```
 
 ### TreeMap
 

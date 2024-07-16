@@ -18,10 +18,10 @@
 Java 的注解处理器在编译时和运行时解析注解。Spring 使用 <u>**反射**</u> 和 <u>**代理**</u> 机制在运行时处理注解，并相应地配置和管理应用程序组件。
 2. <u>依赖注入 (DI)</u>  
 Spring 的核心特性是依赖注入，通过注解可以声明 Bean 之间的依赖关系，Spring 容器会自动管理这些依赖关系。  
-    - @Autowired  
+    - `@Autowired`  
         作用：用于自动注入依赖的 Bean。
-        原理：Spring 容器会扫描带有 @Autowired 注解的字段、构造函数或方法，并自动注入匹配的 Bean。  
-        实现：通过反射机制在运行时找到带有 @Autowired 注解的成员，然后从容器中获取相应的 Bean 并注入。
+        原理：Spring 容器会扫描带有 `@Autowired` 注解的字段、构造函数或方法，并自动注入匹配的 Bean。  
+        实现：通过反射机制在运行时找到带有 `@Autowired` 注解的成员，然后从容器中获取相应的 Bean 并注入。
 
         ```java
         @Service
@@ -33,10 +33,10 @@ Spring 的核心特性是依赖注入，通过注解可以声明 Bean 之间的�
 
 3. <u>控制反转 (IoC)</u>  
 Spring IoC 容器负责管理对象的生命周期和依赖关系，应用程序中的对象通过容器获取依赖，而不是自己创建和管理。
-    - @Component  
+    - `@Component`  
         作用：将类标记为 Spring 管理的 Bean。  
-        原理：Spring 容器在启动时会扫描类路径中带有 @Component 注解的类，并将其实例化、配置和管理。  
-        实现：通过类路径扫描（ClassPathScanningCandidateComponentProvider）找到所有带有 @Component 注解的类，并注册为 Bean。
+        原理：Spring 容器在启动时会扫描类路径中带有 `@Component` 注解的类，并将其实例化、配置和管理。  
+        实现：通过类路径扫描（`ClassPathScanningCandidateComponentProvider`）找到所有带有 `@Component` 注解的类，并注册为 Bean。
 
         ```java
         @Component
@@ -47,9 +47,9 @@ Spring IoC 容器负责管理对象的生命周期和依赖关系，应用程序
 
 4. 自动配置 (Auto Configuration)  
 Spring Boot 的自动配置是通过大量的条件注解实现的，自动配置类根据 <u>类路径 (CLASSPATH)</u> 和环境的具体情况进行相应的配置。
-    - @SpringBootApplication  
-        作用：组合注解，包含 @Configuration、@EnableAutoConfiguration 和 @ComponentScan，用于标记主应用程序类。  
-        原理：@EnableAutoConfiguration 启用 Spring Boot 的自动配置机制，根据类路径中的依赖和应用程序的配置自动配置 Spring 应用。  
+    - `@SpringBootApplication`  
+        作用：组合注解，包含 `@Configuration`、`@EnableAutoConfiguration` 和 `@ComponentScan`，用于标记主应用程序类。  
+        原理：`@EnableAutoConfiguration` 启用 Spring Boot 的自动配置机制，根据类路径中的依赖和应用程序的配置自动配置 Spring 应用。  
         实现：在启动时，Spring Boot 会扫描类路径中的自动配置类（META-INF/spring.factories），并根据条件注解决定是否加载这些配置类。
 
         ```java
@@ -63,9 +63,9 @@ Spring Boot 的自动配置是通过大量的条件注解实现的，自动配�
 
 5. <u>面向切面编程 (Aspect-Oriented Programming, AOP)</u>  
 AOP 允许通过注解声明切面和切点，在方法执行前后添加额外的行为（如事务管理、日志记录）。
-    - @Transactional  
+    - `@Transactional`  
         作用：用于声明事务管理。  
-        原理：Spring AOP 在运行时动态代理带有 @Transactional 注解的方法，在方法执行前后开始和提交事务。  
+        原理：Spring AOP 在运行时动态代理带有 `@Transactional` 注解的方法，在方法执行前后开始和提交事务。  
         实现：通过代理模式（JDK 动态代理或 CGLIB）在方法调用前后插入事务管理逻辑。
 
         ```java
@@ -80,10 +80,10 @@ AOP 允许通过注解声明切面和切点，在方法执行前后添加额外�
 
 6. 属性注入（Property Injection）  
 Spring 支持将外部化配置（如 properties 文件、环境变量）注入到 Bean 中。
-    - @Value  
+    - `@Value`  
         作用：用于注入外部化配置中的属性值。  
-        原理：Spring 容器在初始化 Bean 时，会解析 @Value 注解并从配置源中获取相应的属性值。  
-        实现：通过 PropertySourcesPlaceholderConfigurer 或 @ConfigurationProperties 实现属性注入。
+        原理：Spring 容器在初始化 Bean 时，会解析 `@Value` 注解并从配置源中获取相应的属性值。  
+        实现：通过 `PropertySourcesPlaceholderConfigurer` 或 `@ConfigurationProperties` 实现属性注入。
 
         ```java
         @Component
@@ -96,18 +96,18 @@ Spring 支持将外部化配置（如 properties 文件、环境变量）注入�
 7. 注解解析和处理  
 Spring 容器在启动时会扫描应用程序上下文中的所有类，解析注解并进行相应的处理。Spring 使用反射和代理机制来实现这一点。以下是一些关键组件：
 
-    - ClassPathScanningCandidateComponentProvider：扫描类路径，找到所有带有特定注解的类。  
-    - AnnotationConfigApplicationContext：加载带有 @Configuration 注解的类，并注册相应的 Bean。  
-    - AutowiredAnnotationBeanPostProcessor：处理 @Autowired 注解，实现依赖注入。  
-    - ConfigurationClassPostProcessor：处理 @Configuration 注解，实现基于 Java 配置的 Bean 定义和注册。
+    - `ClassPathScanningCandidateComponentProvider`：扫描类路径，找到所有带有特定注解的类。  
+    - `AnnotationConfigApplicationContext`：加载带有 `@Configuration` 注解的类，并注册相应的 Bean。  
+    - `AutowiredAnnotationBeanPostProcessor`：处理 `@Autowired` 注解，实现依赖注入。  
+    - `ConfigurationClassPostProcessor`：处理 `@Configuration` 注解，实现基于 Java 配置的 Bean 定义和注册。
 
 ### 其他注解
 
-1. @Resource  
-    - @Resource 注解是 Java EE 提供的注解，用于在 Spring 应用程序中进行依赖注入。它通常用于标记需要注入的依赖，类似于 Spring 提供的 @Autowired 注解。  
+1. `@Resource`  
+    - `@Resource` 注解是 Java EE 提供的注解，用于在 Spring 应用程序中进行依赖注入。它通常用于标记需要注入的依赖，类似于 Spring 提供的 `@Autowired` 注解。  
     - 使用方式:
-        - @Resource 可以用于字段、setter 方法或其他方法上。
-        - 默认情况下，@Resource 注解根据名称进行匹配，如果找不到匹配的名称，再根据类型进行匹配。
+        - `@Resource` 可以用于字段、`setter` 方法或其他方法上。
+        - 默认情况下，`@Resource` 注解根据名称进行匹配，如果找不到匹配的名称，再根据类型进行匹配。
 
     ```java
     import javax.annotation.Resource;
@@ -131,11 +131,11 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
     }
     ```
 
-2. @Controller  
-    - @Controller 注解是 Spring MVC 提供的注解，用于标记控制器类。这些控制器类负责处理用户请求，并返回视图或数据。
+2. `@Controller`  
+    - `@Controller` 注解是 Spring MVC 提供的注解，用于标记控制器类。这些控制器类负责处理用户请求，并返回视图或数据。
     - 使用方式:
-        - @Controller 注解用于类上，表明该类是一个控制器类。
-        - 在控制器类中，通常会结合 @RequestMapping 注解来映射 HTTP 请求。
+        - `@Controller` 注解用于类上，表明该类是一个控制器类。
+        - 在控制器类中，通常会结合 `@RequestMapping` 注解来映射 HTTP 请求。
 
     ```java
     import org.springframework.stereotype.Controller;
@@ -155,11 +155,12 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
     }
     ```
 
-3. @Bean  
-    - @Bean 注解用于 Spring 的 Java 配置中，表示一个方法返回一个 Spring 管理的 Bean。该注解通常用于配置类中，用于定义和配置应用程序上下文中的 Bean。
+3. `@Bean`
+    - `@Bean` 注解用于 Spring 的 Java 配置中，***表示一个方法返回一个 Spring 管理的 Bean***。
+    - `@Configuration` 用于定义配置类，配置类在 Spring 应用上下文中用于替代传统的 XML 配置文件，以 Java 类的形式提供 Bean 定义和配置元数据。
     - 使用方式:
-        - @Bean 注解用于方法上，方法的返回值会注册为 Spring 的 Bean。
-        - 通常与 @Configuration 注解一起使用，用于配置类中。
+        - `@Bean` 注解用于方法上，方法的 ***返回值会注册为 Spring 的 Bean。***
+        - 通常与 `@Configuration` 注解一起使用，用于配置类中。
 
     ```java
     import org.springframework.context.annotation.Bean;
@@ -169,16 +170,49 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
     public class AppConfig {
 
         @Bean
-        public MyService myService() {
-            return new MyServiceImpl();
+        public DataSource dataSource() {
+            DataSource dataSource = new DataSource();
+            dataSource.setUrl("jdbc:mysql://localhost:3306/mydb");
+            dataSource.setUsername("user");
+            dataSource.setPassword("password");
+            return dataSource;
         }
 
         @Bean
-        public MyRepository myRepository() {
-            return new MyRepositoryImpl();
+        public MyService myService() {
+            return new MyServiceImpl(dataSource());
         }
     }
     ```
+
+    对应的xml配置文件如下：
+
+    ```xml
+    <!-- src/main/resources/applicationContext.xml -->
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+        <!-- 定义 DataSource Bean -->
+        <bean id="dataSource" class="com.example.DataSource">
+            <!-- property标签等价于上面调用setter方法 -->
+            <property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+            <property name="username" value="user"/>
+            <property name="password" value="password"/>
+        </bean>
+
+        <!-- 定义 MyService Bean，注入 DataSource Bean -->
+        <bean id="myService" class="com.example.MyServiceImpl">
+            <constructor-arg ref="dataSource"/>
+        </bean>
+
+    </beans>
+    ```
+
+4. `@ComponentScan`
+   `@ComponentScan` 注解用于自动扫描指定包及其子包中的所有类，并根据注解（例如 `@Component`, `@Service`, `@Repository`, `@Controller` 等）将它们注册为 Spring 容器中的 bean。一般和 `@Configuration` 一起使用，可以将配置逻辑集中在一个地方，简化了 Spring 应用程序的配置，只需要一个配置类，就可以配置组件扫描和其他 bean 的定义。但在SpringBoot中，`@SpringBootApplication` 包含了 `@ComponentScan`，因此不需要再在其他地方使用。
 
 ## Spring Boot起步依赖原理
 
