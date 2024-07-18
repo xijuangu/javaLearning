@@ -39,31 +39,25 @@ Spring MVC (Model-View-Controller) 是 Spring 框架的一部分，是一种**�
 
 ### @Controller + @RequestMapping
 
-在类上的@Controller注解会将该类标记为控制器类，它会处理HTTP请求。
+在类上的`@Controller`和`@RestController`注解会将该类标记为控制器类，它会处理HTTP请求。
 
-@RequestMapping 用于将任意HTTP请求映射到控制器方法上，表示共享映射，如果没有指定请求方式，将接收GET、POST、HEAD、OPTIONS、PUT、PATCH、DELETE、TRACE、CONNECT所有的HTTP请求方式。我们一般不使用共享映射，需要标明请求路径与请求类型。
+`@RequestMapping` 用于将任意HTTP请求映射到控制器方法上，表示共享映射，如果没有指定请求方式，将接收GET、POST、HEAD、OPTIONS、PUT、PATCH、DELETE、TRACE、CONNECT所有的HTTP请求方式。一般不使用共享映射，而是标明请求路径与请求类型。
 
-@GetMapping、@PostMapping、@PutMapping、@DeleteMapping、@PatchMapping 是@RequestMapping 的变体，直接表明了对应的HTTP方法。
+`@GetMapping`、`@PostMapping`、`@PutMapping`、`@DeleteMapping`、`@PatchMapping` 是`@RequestMapping` 的变体，直接表明了对应的HTTP方法。
 
-@RequestMapping 注解可以在控制器类上和控制器类中的方法上使用。
+`@RequestMapping` 注解可以在控制器类上和控制器类中的方法上使用。
 
-在类的级别上的注解会将一个特定请求或者请求模式映射到一整个控制器上。之后你还可以另外添加方法级别的注解来进一步指定到处理方法的映射关系。
+在类的级别上的注解会将一个特定请求或者请求模式映射到一整个控制器上，方法级别的注解会进一步指定从控制器类到类中的处理方法的映射关系。
 
 ```java
 @RestController
 public class UserController {
-    // 映射到方法上
-    // localhost:8080/user/login
-    // 此处通常用 @GetMapping("/user/login") 表明GET请求方式的映射
-    @RequestMapping("/user/login")  
+    @RequestMapping("/user/login")    // 处理发送到该路径的所有类型的HTTP请求
     public String login() {
         return "user login";
     }
     
-    // 映射到方法上
-    // localhost:8080/user/register
-    // 此处通常用@PostMapping("/user/login")表明POST请求方式的映射
-    @RequestMapping("/user/register")
+    @RequestMapping(value = "/user/register", method = RequestMethod.POST)              // 只处理发送到该路径的POST请求
     public String register() {
         return "user register";
     }
@@ -74,174 +68,171 @@ public class UserController {
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
+
+    @GetMapping("/getColor")
+    public ResponseEntity<String> getColor() {
+        return ResponseEntity.ok(apple.getColor());
+    }
 
     @RequestMapping(value = {
-        "",
-        "/page",
-        "page*",
-        "view/*,**/msg"
-    })
-    String indexMultipleMapping() {
-        return "Hello from index multiple mapping.";
+            "",
+            "/setColor",
+            "setColor*",
+            "setColor/*",
+            "setColor/**"
+    }, method = RequestMethod.POST)
+    public ResponseEntity<Void> setColor(@RequestParam String color) {
+        apple.setColor(color);
+        return ResponseEntity.ok().build();
     }
 }
 ```
 
-```md
-下面这些url都可以被识别：
-localhost:8080/home
-
-localhost:8080/home/
-
-localhost:8080/home/page
-
-localhost:8080/home/pageabc
-
-localhost:8080/home/view/
-
-localhost:8080/home/view/view
-```
-
-> 路径匹配示例：
-> "/resources/ima?e.p ang " - 匹配路径段中的一个字符
-"/resources/*.png" - 匹配一个路径段中的零个或多个字符
-"/resources/**" - 匹配多个路径段
-"/projects/{project}/versions" - 匹配一个路径段并将其捕获为一个变量
-"/projects/{project:[a-z]+}/versions" - 用正则表达式匹配并捕获一个变量
+- 一个星号 (*)
+  - 匹配一个路径段中的任意字符，除了路径分隔符 `/`。
+  - 只能匹配当前路径段的内容。如`"setColor*" -> "/setColor123"`，`"setColor/*" -> "setColor/123"`
+- 两个星号 (**)
+  - ***放在分隔符后***，如`"setColor/**"`，用以匹配零个或多个路径段中的任意字符，包括路径分隔符 `/`。
+  - 可以匹配任意深度的路径层次结构。如`"setColor/**" -> "setColor/123/456/789"`。
+  - 注意：双星号必须单独放在分隔符后！`"setColor**" -> "setColor123/123/456/789"`是无效的！`"setColor**"`等价于`"setColor*"`。想要上面的那种效果可以使用`"setColor*/**"`。
+- 如果要在路径中使用星号匹配，路径的最前面不能有分隔符。
 
 #### 使用@RequestParam
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
 
-    @RequestMapping(value = "/id")
-    // 实现请求参数 id 与 处理方法参数 personId 的绑定。
-    String getIdByValue(@RequestParam("id") String personId) {
-        System.out.println("ID is " + personId);
-        return "Get ID from query string of URL with value element";
-    }
-    @RequestMapping(value = "/personId")
-    String getId(@RequestParam String personId) {
-        System.out.println("ID is " + personId);
-        return "Get ID from query string of URL without value element";
+    @RequestMapping(value = {
+            "",
+            "/setColor",
+            "setColor*",
+            "setColor/*",
+            "setColor/**"
+    }, method = RequestMethod.POST)
+    public ResponseEntity<Void> setColor(@RequestParam("c") String color) { // 这里传递进来的参数名指定为"c"，如果不指定则默认为对象名color
+        apple.setColor(color);
+        return ResponseEntity.ok().build();
     }
 }
 ```
 
 ##### required属性
 
-表示该属性是不是必须的
+- required 是一个布尔类型参数，默认为 true。
+- 当 required = true 时，参数是必需的。如果请求中缺少该参数，Spring MVC 会抛出 MissingServletRequestParameterException。
+- 当 required = false 时，参数是可选的。如果请求中缺少该参数，则方法仍然会被调用，但参数的值会是 null（如果没有指定 defaultValue）。
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/name")
-    String getName(@RequestParam(value = "person", required = true) String personName) {
-        return "Required element of request param";
-    }
-}
-```
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
 
-```java
-@RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/name")
-    String getName(@RequestParam(value = "person", required = false) String personName) {
-        return "Required element of request param";
+    @RequestMapping(value = {
+            "",
+            "/setColor",
+            "setColor*",
+            "setColor/*",
+            "setColor/**"
+    }, method = RequestMethod.POST)
+    public ResponseEntity<Void> setColor(@RequestParam(value = "c", required = true) String color) { 
+        apple.setColor(color);
+        return ResponseEntity.ok().build();
     }
 }
 ```
 
 ##### default属性
 
+- defaultValue 是一个字符串，用来指定参数的默认值。
+- 当请求中缺少该参数时，如果指定了 defaultValue，则参数会使用该默认值，而不是 null。
+- 无论required是否需要，defaultValue都有意义。
+
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/name")
-    String getName(@RequestParam(value = "person", defaultValue = "John") String personName) {
-        return "Required element of request param";
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
+
+    @RequestMapping(value = {
+            "",
+            "/setColor",
+            "setColor*",
+            "setColor/*",
+            "setColor/**"
+    }, method = RequestMethod.POST)
+    public ResponseEntity<Void> setColor(@RequestParam(value = "c", required = true, defaultValue = "Red") String color) { 
+        apple.setColor(color);
+        return ResponseEntity.ok().build();
     }
 }
 ```
 
 #### produces 和 consumes属性
 
+produces 属性用于指定控制器方法生成的响应内容类型，客户端将会根据响应的 Content-Type 头来处理响应数据。
+consumes 属性用于指定控制器方法能够处理的请求内容类型，服务器要根据请求的 Content-Type 头来解析请求数据。
+
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/prod", produces = {
-        "application/JSON"
-    })
-    @ResponseBody
-    String getProduces() {
-        return "Produces attribute";
-    }
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
 
-    @RequestMapping(value = "/cons", consumes = {
-        "application/JSON",
-        "application/XML"
-    })
-    String getConsumes() {
-        return "Consumes attribute";
+    @PostMapping(value = "/setApple", consumes = "application/json", produces = "application/json")
+    public Apple setApple(@RequestBody Apple newApple) {
+        apple.setColor(newApple.getColor());
+        apple.setWeight(newApple.getWeight());
+        return apple;
     }
 }
 ```
 
-#### header属性
+`consumes = "application/json"` 表示该方法只能处理 Content-Type 为 application/json 的请求。
+`produces = "application/json"` 表示该方法返回的响应内容类型为 application/json。
+
+#### headers属性
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/head", headers = {
-        "content-type=text/plain"
-    })
-    String post() {
-        return "Mapping applied along with headers";
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
+
+    @RequestMapping(value="/getColor", headers = "X-Header=myHeaderValue")      // 发送的请求中的headers必须有X-Header=myHeaderValue，否则不处理
+    public ResponseEntity<String> getColor() {
+        return ResponseEntity.ok(apple.getColor());
     }
 }
 ```
 
-指定多个消息头：
+指定多个消息头时，所有指定的消息头都要包含在HTTP请求内，否则不处理。
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/head", headers = {
-        "content-type=text/plain",
-        "content-type=text/html"
-    }) String post() {
-        return "Mapping applied along with headers";
-    }
-}
-```
+@RequestMapping("/apple")
+public class AppleController {
+    @Autowired
+    private Apple apple;
 
-#### params属性
-
-```java
-@RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/fetch", params = {
-        "personId=10"
-    })
-    String getParams(@RequestParam("personId") String id) {
-        return "Fetched parameter using params attribute = " + id;
-    }
-    @RequestMapping(value = "/fetch", params = {
-        "personId=20"
-    })
-    String getParamsDifferent(@RequestParam("personId") String id) {
-        return "Fetched parameter using params attribute = " + id;
+    @RequestMapping(value="/getColor", headers = {
+            "X-Header=myHeaderValue",
+            "Y-Header=myValue"
+    })      // 同时指定了两个消息头，必须两个都有才处理
+    public ResponseEntity<String> getColor() {
+        return ResponseEntity.ok(apple.getColor());
     }
 }
 ```
@@ -250,66 +241,51 @@ public class IndexController {
 
 ```java
 @RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping(value = "/fetch/{id}", method = RequestMethod.GET)
-    String getDynamicUriValue(@PathVariable String id) {
-        System.out.println("ID is " + id);
-        return "Dynamic URI parameter fetched";
-    }
-    @RequestMapping(value = "/fetch/{id:[a-z]+}/{name}", method = RequestMethod.GET)
-    String getDynamicUriValueRegex(@PathVariable("name") String name) {
-        System.out.println("Name is " + name);
-        return "Dynamic URI parameter fetched using regex";
-    }
-}
-```
+@RequestMapping("/items")
+public class ItemController {
 
-#### 默认处理方法
+    @GetMapping("/{itemId}")
+    public String getItem(@PathVariable String itemId) {       
+        return "Item ID: " + itemId;
+    }
 
-```java
-@RestController
-@RequestMapping("/home")
-public class IndexController {
-    @RequestMapping()
-    String
-    default () {
-        return "This is a default method for the class";
+
+    // 可以使用name属性指定路径中的占位符与变量名的对应关系，否则占位符要和变量名一致
+    @GetMapping("/{category}/{id}")
+    public String getItemByCategory(@PathVariable String category, @PathVariable(name = "id") String itemId) {
+        return "Category: " + category + ", Item ID: " + itemId;
     }
 }
 ```
 
 ### @Controller / @RestController
 
-- @Controller 注解标记的类是传统的控制器类。它用于处理客户端发起的请求，并负责返回适当的视图（View）作为响应。在使用 @Controller 注解标记的类中，默认情况下，方法的返回值会被解析为一个视图名称，并寻找与该名称匹配的视图进行渲染。这意味着返回的结果会被解析为一个 HTML 页面或者模板引擎所需的数据。但是有时候需要将方法的返回值直接作为响应的主体内容，而不是解析为视图。为了实现这个目的，我们可以在方法上使用 @ResponseBody 注解。@ResponseBody 注解表示方法的返回值应该直接写入 HTTP 响应体中，而不是被解析为视图。它告诉 Spring MVC 框架将方法的返回值序列化为特定格式（如 JSON、XML 等）并作为响应的主体内容返回给客户端。
-- @RestController 是一个组合注解，它结合了 @Controller 和 @ResponseBody 注解的功能（就相当于把两个注解组合在一起）。在使用 @RestController 注解标记的类中，每个方法的返回值都会以 JSON 或 XML 的形式直接写入 HTTP 响应体中，相当于在每个方法上都添加了 @ResponseBody 注解。
+- `@Controller` 注解标记的类是传统的控制器类。它用于处理客户端发起的请求，并负责返回适当的视图（View）作为响应。在使用 `@Controller` 注解标记的类中，默认情况下，方法的返回值会被解析为一个视图名称，并寻找与该名称匹配的视图进行渲染。这意味着返回的结果会被解析为一个 HTML 页面或者模板引擎所需的数据。但是有时候需要将方法的返回值直接作为响应的主体内容，而不是解析为视图。为了实现这个目的，我们可以在方法上使用 `@ResponseBody` 注解。`@ResponseBody` 注解表示方法的返回值应该直接写入 HTTP 响应体中，而不是被解析为视图。它告诉 Spring MVC 框架将方法的返回值序列化为特定格式（如 JSON、XML 等）并作为响应的主体内容返回给客户端。
+- produces 属性与 `@ResponseBody` 可以结合使用，这样更加明确了返回的内容类型，确保客户端和服务器之间的契约更为清晰。
+- `@RestController` 是一个组合注解，它结合了` @Controller `和 `@ResponseBody` 注解的功能（就相当于把两个注解组合在一起）。在使用 `@RestController` 注解标记的类中，每个方法的返回值都会以 JSON 或 XML 的形式直接写入 HTTP 响应体中，相当于在每个方法上都添加了 `@ResponseBody` 注解。
+
+上面的例子中用的都是`@RestController`，因此都没有使用`@ResponseBody`
 
 ```java
-@RestController
+@Controller
 @RequestMapping("/home")
 public class IndexController {
+
     @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody       // 需要@ResponseBody
     String get() {
         return "Hello from get";
     }
+
     @RequestMapping(method = RequestMethod.DELETE)
     String delete() {
-        return "Hello from delete";
+        return "Hello from delete";     // 如果没有找到名为“Hello from delete”的视图，方法就会报错404
     }
-    @RequestMapping(method = RequestMethod.POST)
-    String post() {
-        return "Hello from post";
-    }
-    @RequestMapping(method = RequestMethod.PUT)
-    String put() {
-        return "Hello from put";
-    }
-    @RequestMapping(method = RequestMethod.PATCH)
-    String patch() {
-        return "Hello from patch";
-    }
+
 }
 ```
+
+#### 什么时候需要视图
 
 当设计 RESTful API 时，一般的原则是：
 如果客户端希望获取数据（例如 JSON、XML），则返回数据。
