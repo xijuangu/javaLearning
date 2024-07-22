@@ -203,6 +203,9 @@ public class ForEachDemo {
                 return value;
         });
         System.out.println("sites.replaceAll(key, value) toUpperCase: " + sites);
+        // 单个字符想变成大写需要用:
+        // char c = 'c';
+        // c = Character.toUpperCase(c);
 
         sites.replace(1, "newBing");
         System.out.println("sites.replace(1, newBing): " + sites);
@@ -210,7 +213,7 @@ public class ForEachDemo {
         System.out.println("sites.containsKey(3): " + sites.containsKey(3));
         System.out.println("sites.containsValve(\"baidu\"): " + sites.containsValue("baidu"));
 
-        //ArrayList<String> myArray = (ArrayList<String>)sites.values();
+        //错误：ArrayList<String> myArray = (ArrayList<String>)sites.values();
         System.out.println("sites.values(): " + sites.values());
         ArrayList<String> myArray = new ArrayList<String>(sites.values());
         System.out.println("sites.values() 返回一个 Collection，可以用来创建列表: " + myArray);
