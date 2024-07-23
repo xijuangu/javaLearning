@@ -34,9 +34,10 @@ Spring 的核心特性是依赖注入，通过注解可以声明 Bean 之间的�
 3. <u>控制反转 (IoC)</u>  
 Spring IoC 容器负责管理对象的生命周期和依赖关系，应用程序中的对象通过容器获取依赖，而不是自己创建和管理。
     - `@Component`  
-        作用：将类标记为 Spring 管理的 Bean。  
-        原理：Spring 容器在启动时会扫描类路径中带有 `@Component` 注解的类，并将其实例化、配置和管理。  
-        实现：通过类路径扫描（`ClassPathScanningCandidateComponentProvider`）找到所有带有 `@Component` 注解的类，并注册为 Bean。
+      - 作用：将类标记为 Spring 管理的 Bean。
+      - 属性：`@Component(value = "myBean")`，等同于`<bean id = "myBean" class="com.apps.pojo.MyBean" />`
+      - 原理：Spring 容器在启动时会扫描类路径中带有 `@Component` 注解的类，并将其实例化、配置和管理。  
+      - 实现：通过类路径扫描（`ClassPathScanningCandidateComponentProvider`）找到所有带有 `@Component` 注解的类，并注册为 Bean。
 
         ```java
         @Component
@@ -104,32 +105,55 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
 ### 其他注解
 
 1. `@Resource`  
-    - `@Resource` 注解是 Java EE 提供的注解，用于在 Spring 应用程序中进行依赖注入。它通常用于标记需要注入的依赖，类似于 Spring 提供的 `@Autowired` 注解。  
+    - `@Resource` 注解是 Java EE 提供的注解，用于在 Spring 应用程序中进行依赖注入。它通常用于标记需要注入的依赖，类似于 Spring 提供的 `@Autowired` 注解。
+    - @Resource 有两个属性，分别为 name 和 type，name 指定根据 Spring 容器中 bean 的名字来进行注入，type 指定根据 bean 的类型来进行注入。
     - 使用方式:
         - `@Resource` 可以用于字段、`setter` 方法或其他方法上。
-        - 默认情况下，`@Resource` 注解根据名称进行匹配，如果找不到匹配的名称，再根据类型进行匹配。
+        - @Resource 注入时的查找规则：
+          - 既不指定 name 属性，也不指定 type 属性：
+            默认按字段名或属性名作为 bean 名称进行按名字注入。
+            如果找不到符合的 bean，则退回到按类型注入。如果找到多个匹配的类型，则抛出异常。
 
-    ```java
-    import javax.annotation.Resource;
+            ```java
+            @Resource
+            private MyRepository myRepository;
+            ```
 
-    @Service
-    public class MyService {
-        @Resource(name = "myRepository")
-        private MyRepository myRepository;
+            如果 Spring 容器中存在一个名字为 myRepository ( bean name = "myRepository" )的 bean，则注入该 bean。如果没有找到，则按 MyRepository 类型查找唯一匹配的 bean。
 
-        // Setter 注入方式
-        @Resource
-        public void setMyRepository(MyRepository myRepository) {
-            this.myRepository = myRepository;
-        }
+            ```xml
+            <bean name="myRepository" class="org.xijuangu.src.java.MyRepository"></bean> 
+            ```
 
-        // 方法注入方式
-        @Resource
-        public void injectRepository(MyRepository myRepository) {
-            this.myRepository = myRepository;
-        }
-    }
-    ```
+          - 只指定 name 属性：
+            按 name 属性值查找匹配的 bean。如果找不到匹配的 bean，则抛出异常。
+
+            ```java
+            @Resource(name = "myRepo")
+            private MyRepository myRepository;
+            ```
+
+            这段代码会查找名为 myRepo 的 bean，并注入到 myRepository 字段中。
+
+          - 只指定 type 属性：
+            按 type 属性值查找匹配的 bean。如果找不到匹配的 bean 或者找到多个匹配的 bean，则抛出异常。
+
+            ```java
+            @Resource(type = MyRepository.class)
+            private MyRepository myRepository;
+            ```
+
+            这段代码会按 MyRepository 类型查找唯一匹配的 bean 并进行注入。
+
+          - 既指定了 name 属性又指定了 type 属性：
+            按 name 属性值查找匹配的 bean，并且该 bean 必须是 type 属性指定的类型。如果找不到匹配的 bean 或者类型不符，则抛出异常。
+
+            ```java
+            @Resource(name = "myRepo", type = MyRepository.class)
+            private MyRepository myRepository;
+            ```
+
+            这段代码会查找名为 myRepo 且类型为 MyRepository 的 bean 并进行注入。
 
 2. `@Controller`  
     - `@Controller` 注解是 Spring MVC 提供的注解，用于标记控制器类。这些控制器类负责处理用户请求，并返回视图或数据。
@@ -213,6 +237,201 @@ Spring 容器在启动时会扫描应用程序上下文中的所有类，解析�
 
 4. `@ComponentScan`
    `@ComponentScan` 注解用于自动扫描指定包及其子包中的所有类，并根据注解（例如 `@Component`, `@Service`, `@Repository`, `@Controller` 等）将它们注册为 Spring 容器中的 bean。一般和 `@Configuration` 一起使用，可以将配置逻辑集中在一个地方，简化了 Spring 应用程序的配置，只需要一个配置类，就可以配置组件扫描和其他 bean 的定义。但在SpringBoot中，`@SpringBootApplication` 包含了 `@ComponentScan`，因此不需要再在其他地方使用。
+
+## AOP
+
+注解：
+
+1. @Aspect，不能单独使用，需要加上@Component
+2. @Pointcut
+3. @Before
+4. @After
+5. @Around
+6. @AfterReturning
+7. @AfterThrowing
+
+占位符：
+
+1. `*`（星号）：
+    - 返回类型：`*` 表示任意返回类型。例如，`execution(* com.abc.service.*.many*(..))` 中第一个 `*`。
+    - 类名：`*` 表示任意方法名。例如，`execution(* com.xyz.service..*.*(..))` 中第二个 `*`。
+    - 方法名：`*` 表示任意方法名。例如，`execution(* com.xyz.service..*.*(..))` 中第三个 `*`。
+2. `..`（双点）：
+    - 包名：表示当前包及其所有子包。例如，`com.xyz.service..` 表示 `com.xyz.service` 包及其所有子包。
+    - 参数：表示任意数量和类型的参数。例如，`(..)` 表示任意参数。
+3. `()`（圆括号）：
+    - 参数列表：用于指定方法的参数列表。例如，`(..)` 表示任意参数。
+
+表达式：
+
+1. execute：用于匹配方法执行。
+
+   ```java
+   // 匹配 com.example.service 包及其子包中的所有方法
+    @Pointcut("execution(* com.example.service..*.*(..))")
+    public void allServiceMethods() {}
+    ```
+
+2. within：用于匹配特定类型中的所有方法 `@Pointcut("within(com.example.service..*)")`
+3. this：用于匹配当前 AOP 代理对象的类型，只有代理对象的类型和声明的类型相同才会执行。
+   - 目标对象：这是我们在应用程序中实际定义的对象，例如某个业务逻辑类的实例。
+   - 代理对象：这是 AOP 框架生成的对象，它包装了目标对象，并在调用目标对象的方法时插入额外的逻辑（例如日志记录、事务管理等）。
+   当我们应用 AOP 切面到某个目标对象时，AOP 框架会创建一个代理对象。这个代理对象在调用目标对象的方法之前和之后执行切面逻辑。
+   - this 表达式的匹配逻辑
+       this(type) 表达式检查当前 AOP 代理对象是否是指定的类型。如果代理对象的类型与指定的类型匹配，那么切入点会被激活。
+   - 假设我们有一个接口 MyService 和它的实现类 MyServiceImpl：
+
+        ```java
+        public interface MyService {
+            void performTask();
+        }
+
+        public class MyServiceImpl implements MyService {
+            @Override
+            public void performTask() {
+                System.out.println("Performing task");
+            }
+        }
+        ```
+
+        我们定义一个切面来拦截 MyService 接口的所有方法调用：
+
+        ```java
+        @Aspect
+        @Component
+        public class MyAspect {
+
+            @Pointcut("this(com.example.MyService)")
+            public void proxyImplementsMyService() {}
+
+            @Before("proxyImplementsMyService()")
+            public void beforeProxyMethods() {
+                System.out.println("Before method in proxy implementing MyService");
+            }
+        }
+        ```
+
+        当 Spring AOP 创建代理对象时，有两种主要的代理方式：
+        - JDK 动态代理：如果目标对象实现了一个或多个接口，Spring AOP 会默认使用 JDK 动态代理。这种代理方式生成的代理对象实现了与目标对象相同的接口。
+        - CGLIB 代理：如果目标对象没有实现任何接口，Spring AOP 会使用 CGLIB 创建一个子类代理。这种代理方式生成的代理对象是目标对象类的子类。
+
+        ```java
+        MyService myService = new MyServiceImpl();  // 目标对象
+        MyService proxy = (MyService) ProxyFactory.getProxy(myService);  // 代理对象
+        //MyService myService = new MyServiceImpl(); 表示目标对象 myService 是 MyService 接口的实现类的对象。
+        //ProxyFactory.getProxy(myService) 返回了一个 Object 类型的实现了 MyService 接口的代理对象，并可以被强制转换为MyService类型（被视为实现类），也即代理对象是 JDK 动态代理方式创建的。
+
+        MyServiceImpl myService = new MyServiceImpl();  // 目标对象
+        MyServiceImpl proxy = (MyServiceImpl) ProxyFactory.getProxy(myService);  // 代理对象
+        //MyServiceImpl myService = new MyServiceImpl(); 表示目标对象 myService 是一个具体类的对象，而不是实现了 MyService 接口的实现类的对象。
+        //ProxyFactory.getProxy(myService) 返回了一个 Object 类型的 MyServiceImpl 的子类代理对象，并可以被强制转换为 MyServiceImpl 类型，但不能转换为 MyService 类型（被视为普通类），也即代理对象是 CDLIB 代理方式创建的。
+        ```
+
+4. target：用于匹配目标对象为指定的类型。如`target(com.xyz.service.AccountService)`，目标对象为`AccountService`类型的会被代理
+5. args：用于匹配方法参数的类型。
+
+    ```java
+    // 匹配参数类型为 String 的所有方法
+    @Pointcut("args(java.lang.String)")
+    public void methodsWithStringArgument() {}
+    ```
+
+6. @target：用于匹配目标对象的类具有指定注解。
+
+   ```java
+   // 匹配目标对象的类上有 @Repository 注解的所有方法
+   @Pointcut("@target(org.springframework.stereotype.Repository)")
+   public void targetWithRepositoryAnnotation() {}
+   ```
+
+7. @within：用于匹配具有指定注解的类中的所有方法。
+
+    ```java
+    // 匹配所有标有 @Service 注解的类中的所有方法
+    @Pointcut("@within(org.springframework.stereotype.Service)")
+    public void withinServiceAnnotatedClass() {}
+    ```
+
+8. @annotation：用于匹配具有指定注解的方法。
+
+    ```java
+    // 匹配所有标有 @Transactional 注解的方法
+    @Pointcut("@annotation(org.springframework.transaction.annotation.Transactional)")
+    public void transactionalMethods() {}
+    ```
+
+9. @args：用于匹配方法参数的运行时类型具有指定注解的方法。
+
+    ```java
+    // 匹配参数运行时类型具有 @Validated 注解的方法
+    @Pointcut("@args(org.springframework.validation.annotation.Validated)")
+    public void methodsWithValidatedArgs() {}
+    ```
+
+以下为@Around、@Before等注解的使用样例：
+
+```java
+@Aspect
+public class AdviceTest {
+    @Around("execution(* com.abc.service.*.many*(..))")
+    public Object process(ProceedingJoinPoint point) throws Throwable {
+        System.out.println("@Around：执行目标方法之前...");
+        //访问目标方法的参数：
+        Object[] args = point.getArgs();
+        if (args != null && args.length > 0 && args[0].getClass() == String.class) {
+            args[0] = "改变后的参数1";
+        }
+        //用改变后的参数执行目标方法
+        Object returnValue = point.proceed(args);
+        System.out.println("@Around：执行目标方法之后...");
+        System.out.println("@Around：被织入的目标对象为：" + point.getTarget());
+        return "原返回值：" + returnValue + "，这是返回结果的后缀";
+    }
+    
+    @Before("execution(* com.abc.service.*.many*(..))")
+    public void permissionCheck(JoinPoint point) {
+        System.out.println("@Before：模拟权限检查...");
+        System.out.println("@Before：目标方法为：" + 
+                point.getSignature().getDeclaringTypeName() + 
+                "." + point.getSignature().getName());
+        System.out.println("@Before：参数为：" + Arrays.toString(point.getArgs()));
+        System.out.println("@Before：被织入的目标对象为：" + point.getTarget());
+    }
+    
+    @AfterReturning(pointcut="execution(* com.abc.service.*.many*(..))", 
+        returning="returnValue")    // returning属性指定一个参数名以保存目标方法的返回值
+    public void log(JoinPoint point, Object returnValue) {
+        System.out.println("@AfterReturning：模拟日志记录功能...");
+        System.out.println("@AfterReturning：目标方法为：" + 
+                point.getSignature().getDeclaringTypeName() + 
+                "." + point.getSignature().getName());
+        System.out.println("@AfterReturning：参数为：" + 
+                Arrays.toString(point.getArgs()));
+        System.out.println("@AfterReturning：返回值为：" + returnValue);
+        System.out.println("@AfterReturning：被织入的目标对象为：" + point.getTarget());
+        
+    }
+    
+    @After("execution(* com.abc.service.*.many*(..))")
+    public void releaseResource(JoinPoint point) {
+        System.out.println("@After：模拟释放资源...");
+        System.out.println("@After：目标方法为：" + 
+                point.getSignature().getDeclaringTypeName() + 
+                "." + point.getSignature().getName());
+        System.out.println("@After：参数为：" + Arrays.toString(point.getArgs()));
+        System.out.println("@After：被织入的目标对象为：" + point.getTarget());
+    }
+
+    @AfterThrowing(
+        pointcut = "execution(* com.example.service.MyService.*(..))",
+        throwing = "error"      // throwing属性指定一个参数名以保存目标方法抛出的异常
+    )
+    public void afterThrowingAdvice(JoinPoint joinPoint, Throwable error) {
+        System.out.println("After throwing advice. Method: " + joinPoint.getSignature());
+        System.out.println("Exception: " + error);
+    }
+}
+```
 
 ## Spring Boot起步依赖原理
 
