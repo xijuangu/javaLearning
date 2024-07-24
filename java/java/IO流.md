@@ -1,6 +1,6 @@
 # I/O流
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 ## 字节流
 
@@ -156,34 +156,34 @@ public class FileTransportDemo {
 
 ### ASCII编码
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 ASCII编码以一个字节存储，空位补0，最高位一定是0，因为一共只有0-255共256个字符，最多只能到01111111。
 
 ### GBK编码
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 
 GBK编码在英文上完全兼容ASCII码，与上面ASCII编码的介绍图完全一致。英文一个字节存储，汉字两个字节存储。对于中文，高位字节规定以1作为开头，所以在GBK编码中，开头是0还是1就是区别英文和中文字节的标志。
 
-![alt text](image-7.png)
+![alt text](images/image-7.png)
 
 > 在Java中，byte类型是8位有符号整数，范围是从 -128 到 127。因此，如果一个字节的最高位（第8位）为1，则它表示一个负数。
 
 ### ANSI编码
 
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
 在 Windows 环境中，ANSI 编码通常指的是系统默认的代码页（Code Page），不同语言和地区使用不同的代码页。例如，Windows-1252 用于西欧语言，Windows-1251 用于西里尔文（如俄语），Windows-936 用于简体中文（GBK）。ANSI 编码字符集通常包括 ASCII 字符（0-127）以及扩展字符（128-255），扩展字符部分根据不同的代码页有不同的定义，因此，ANSI 编码并没有统一的标准，它随地区和语言而变化，同一个字节值在不同的 ANSI 代码页下可能表示不同的字符。
 
 ### Unicode
 
-![alt text](image-8.png)
+![alt text](images/image-8.png)
 
 Unicode 标准定义了一个全球通用的字符集合和每个字符的唯一码位（称为码点或代码点），例如：字符 "汉" 的码位是 U+6C49。然后，这些码位可以通过不同的编码形式转化为不同的编码，如 UTF-8(使用1-4个字节保存)、UTF-16(使用2-4个字节保存)、UTF-32(使用固定4个字节保存)，其中最常见的是UTF-8，英文1个字节，中文3个字节，如下图。图中左下角的表表示各个字节数的转换规则，其中规定了各个字节数的开头必须满足的条件。"汉"字查询Unicode码位是U+6C49，转换为10进制是27721，转换为2进制为01101100 01001001，根据左下角的规则，转换为：**1110**0110 **10**110001 **10**001001
-![alt text](image-9.png)
+![alt text](images/image-9.png)
 
 ### 乱码
 
@@ -191,11 +191,11 @@ Unicode 标准定义了一个全球通用的字符集合和每个字符的唯一
 
 ### Java中编码和解码的方法
 
-![alt text](image-10.png)
+![alt text](images/image-10.png)
 
 ## 字符流
 
-![alt text](image-11.png)
+![alt text](images/image-11.png)
 
 遇到中文时一次读多个字节，具体读几个字节就由选定的字符集决定。
 
@@ -253,9 +253,9 @@ public class FileReaderDemo {
 
 ### FileWriter
 
-![alt text](image-12.png)
+![alt text](images/image-12.png)
 
-![alt text](image-13.png)
+![alt text](images/image-13.png)
 
 ```java
 package org.xijuangu;
