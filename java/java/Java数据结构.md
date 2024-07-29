@@ -219,7 +219,36 @@ public class ForEachDemo {
         System.out.println("sites.values() 返回一个 Collection，可以用来创建列表: " + myArray);
 
         System.out.println("sites.keySet(): " + sites.keySet());
-        System.out.println("sites.entrySet() 返回一个set: " + sites.entrySet());
+        System.out.println("sites.entrySet() 返回一个键值对的set: " + sites.entrySet());
+
+
+        // 遍历Map的方法：
+
+        //第一种：普遍使用，由于二次取值,效率会比第二种和第三种慢一倍
+        System.out.println("通过Map.keySet遍历key和value：");
+        for (Integer key : sites.keySet()) {
+            System.out.println("key= "+ key + " and value= " + sites.get(key));
+        }
+
+        //第二种
+        System.out.println("通过Map.entrySet使用iterator遍历key和value：");
+        Iterator<Map.Entry<Integer, String>> it = sites.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, String> entry = it.next();
+            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
+        }
+
+        //第三种：无法在for循环时实现remove等操作
+        System.out.println("通过Map.entrySet遍历key和value");
+        for (Map.Entry<Integer, String> entry : sites.entrySet()) {
+            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
+        }
+
+        //第四种：只能获取values,不能获取key
+        System.out.println("通过Map.values()遍历所有的value，但不能遍历key");
+        for (String v : sites.values()) {
+            System.out.println("value = " + v);
+        }
     }
 }
 ```

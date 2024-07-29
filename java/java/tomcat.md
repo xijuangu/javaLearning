@@ -71,3 +71,8 @@ Tomcat工作全流程详细如下：
 
 6. 客户端接收响应
    - 浏览器 接收服务器返回的 HTTP 响应，解析响应内容（如 HTML），并呈现给用户。
+
+![alt text](image.png)
+
+![alt text](image-1.png)
+
