@@ -245,6 +245,7 @@ public class ForEachDemo {
         }
 
         //第四种：只能获取values,不能获取key
+        sites.put(4, "FACEBOOK");
         System.out.println("通过Map.values()遍历所有的value，但不能遍历key");
         for (String v : sites.values()) {
             System.out.println("value = " + v);

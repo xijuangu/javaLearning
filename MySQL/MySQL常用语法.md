@@ -22,7 +22,7 @@ SELECT CASE
 FROM table_name;
 ```
 
-如果表中的元组满足条件，CASE 会在该元组的新的一列中返回指定的结果，与该元组相对应。如不使用 AS column_name 指定新列名，新列名将默认为 case。例如：
+如果表中的元组满足条件，SELECT CASE 会在该元组的新的一列中返回指定的结果，与该元组相对应。如不使用 AS column_name 指定新列名，新列名将默认为 case。例如：
 
 ```sql
 SELECT 
@@ -78,6 +78,131 @@ SELECT
               ELSE NULL 
           END) AS li_first_name
 FROM student_table;
+```
+
+## 视图
+
+视图是一个虚拟表，它是通过 SQL 查询语句定义的，并可以像表一样进行查询。创建视图的标准语法如下：
+
+```sql
+CREATE VIEW view_name AS 
+SELECT column1, column2, ... 
+FROM table_name 
+WHERE condition;
+```
+
+示例：创建视图 view_s 显示所有性别为男的同学的信息：
+
+```sql
+CREATE VIEW view_s AS
+SELECT * FROM STU
+WHERE 性别='男';
+```
+
+这样，视图 view_s 将包含表 STU 中所有性别为男的记录，可以像查询表一样查询这个视图：
+
+```sql
+SELECT * FROM view_s;
+```
+
+## 窗口函数
+
+RANK() OVER：用于为分组内的每一行生成排名，相同值的行具有相同的排名，后续的排名会跳过这几个相同的排名。例如(90, 1), (90, 1), (80, 3), (60, 4), (60, 4), (50, 6)
+OVER 子句：用于定义窗口。可以指定分区 (PARTITION BY) 和排序 (ORDER BY)。
+
+```sql
+SELECT shirt_name, shirt_type, shirt_price,
+       RANK() OVER (PARTITION BY shirt_type ORDER BY shirt_price) AS ranking
+FROM SHIRTABLE;
+```
+
+上面的例子中，查询的结果会按照衬衫类型 (shirt_type) 分组，并按衬衫价格 (shirt_price) 排序，然后生成排名，排名的列名为 ranking。
+
+查询结果示例：
+shirt_name|shirt_type|shirt_price|ranking
+---|---|---|---
+Shirt A|Casual|20.00|1
+Shirt E|Casual|22.00|2
+Shirt B|Casual|25.00|3
+Shirt D|Formal|28.00|1
+Shirt C|Formal|30.00|2
+
+## IN 子句
+
+IN 子句用于指定多个值进行匹配，在 WHERE 子句中常见。它允许你检查某个表达式是否在给定的列表中，简化了多重 OR 条件的写法。
+
+```sql
+SELECT column_name(s)
+FROM table_name
+WHERE column_name IN (value1, value2, ...);
+```
+
+假设有一个学生成绩表 sc：
+
+sno|class|score
+---|---|---
+1|English|89
+1|Math|90
+1|Chinese|99
+2|English|85
+2|Math|95
+2|Chinese|80
+
+查询学号为 1 或 2 的学生成绩：
+
+```sql
+SELECT *
+FROM sc
+WHERE sno IN (1, 2);
+```
+
+结果
+sno|class|score
+---|---|---
+1|English|89
+1|Math|90
+1|Chinese|99
+2|English|85
+2|Math|95
+2|Chinese|80
+
+## IF 子句
+
+IF 子句是 MySQL 提供的一个条件函数，用于根据某个条件返回不同的值。与 CASE 表达式类似，但更简单。IF 函数接受三个参数：条件、条件为真时返回的值、条件为假时返回的值。
+
+```sql
+IF(condition, true_value, false_value)
+```
+
+示例
+从上面的学生成绩表 sc 中，获取每个学生的成绩，如果成绩大于等于 90，标记为 "Pass"，否则标记为 "Fail"：
+
+```sql
+SELECT sno, class, score,
+       IF(score >= 90, 'Pass', 'Fail') AS result
+FROM sc;
+```
+
+结果
+sno|class|score|result
+---|---|---|---
+1|English|89|Fail
+1|Math|90|Pass
+1|Chinese|99|Pass
+2|English|85|Fail
+2|Math|95|Pass
+2|Chinese|80|Fail
+
+综合示例
+在一个查询中结合使用 IN 子句和 IF 函数：
+
+```sql
+SELECT sno,
+       SUM(IF(class = 'English', score, 0)) AS english_score,
+       SUM(IF(class = 'Math', score, 0)) AS math_score
+FROM sc
+WHERE class IN ('English', 'Math')
+GROUP BY sno;
 ```
 
 ## 概念题
