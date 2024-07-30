@@ -2,7 +2,7 @@
 
 ## SUM 函数
 
-SUM 函数用于计算数值列的总和。它忽略 NULL 值。
+SUM 函数用于计算数值列的总和。它 **忽略 NULL 值**。
 
 ```sql
 SELECT SUM(column_name) FROM table_name;
@@ -22,7 +22,7 @@ SELECT CASE
 FROM table_name;
 ```
 
-如果表中的元组满足条件，SELECT CASE 会在该元组的新的一列中返回指定的结果，与该元组相对应。如不使用 AS column_name 指定新列名，新列名将默认为 case。例如：
+如果表中的元组满足条件，SELECT CASE 会在该元组的新的一列中返回指定的结果，与该元组相对应。使用 AS column_name 可以指定新列名，不指定则默认为默认为 case。
 
 ```sql
 SELECT 
@@ -107,8 +107,8 @@ SELECT * FROM view_s;
 
 ## 窗口函数
 
-RANK() OVER：用于为分组内的每一行生成排名，相同值的行具有相同的排名，后续的排名会跳过这几个相同的排名。例如(90, 1), (90, 1), (80, 3), (60, 4), (60, 4), (50, 6)
-OVER 子句：用于定义窗口。可以指定分区 (PARTITION BY) 和排序 (ORDER BY)。
+`RANK() OVER`：用于为分组内的每一行生成排名，相同值的行具有相同的排名，后续的排名会跳过这几个相同的排名。例如：`(90, 1), (90, 1), (80, 3), (60, 4), (60, 4), (50, 6)`
+`OVER` 子句：用于定义窗口。可以指定分区 `(PARTITION BY)` 和排序 `(ORDER BY)`。
 
 ```sql
 SELECT shirt_name, shirt_type, shirt_price,
@@ -132,7 +132,7 @@ Shirt C|Formal|30.00|2
 IN 子句用于指定多个值进行匹配，在 WHERE 子句中常见。它允许你检查某个表达式是否在给定的列表中，简化了多重 OR 条件的写法。
 
 ```sql
-SELECT column_name(s)
+SELECT column_name1, column_name2, ...
 FROM table_name
 WHERE column_name IN (value1, value2, ...);
 ```
