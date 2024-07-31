@@ -69,200 +69,7 @@ ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(array));
 System.out.println("ArrayList elements: " + arrayList);
 ```
 
-**翻到最后有ArrayList的示例代码，可以先去看那个，试着运行一下看看。**
-
-### LinkedList
-
-- 特点： 双向链表，元素之间通过指针连接。
-- 优点： 插入和删除元素高效，迭代器性能好。
-- 缺点： 随机访问相对较慢。
-
-## 集合（Sets）
-
-集合（Sets）用于存储不重复的元素，常见的实现有 HashSet 和 TreeSet。
-
-```java
-Set<String> hashSet = new HashSet<>();
-Set<Integer> treeSet = new TreeSet<>();
-```
-
-### HashSet
-
-- 特点： 无序集合，基于HashMap实现。
-- 优点： 高效的查找和插入操作。
-- 缺点： 不保证顺序。
-
-```java{.line-numbers}
-package org.xijuangu;
-
-import java.util.HashSet;
-
-public class HashSetDemo {
-    public static void main(String[] args) {
-        HashSet<String> sites = new HashSet<>();
-        sites.add("google");
-        sites.add("facebook");
-        sites.add("twitter");
-        sites.add("youtube");
-        sites.add("google");        // 添加重复的元素无效
-        System.out.println(sites);
-
-        System.out.println("sites.contains(\"google\"): " + sites.contains("google"));
-
-        // 删除元素，成功返回true，失败返回false
-        System.out.println("sites.remove(\"google\"): " + sites.remove("google"));
-        System.out.println("google removed sites: " + sites);
-
-        System.out.println("sites.size(): " + sites.size());
-
-        sites.clear();
-        System.out.println("sites.clear(): " + sites);
-        System.out.println("sites.isEmpty(): " + sites.isEmpty());
-
-        sites.add("google");
-        sites.forEach(e -> {
-            if(e.equals("google")){
-                sites.add(e.toUpperCase());
-                sites.remove(e);
-            }
-        });
-        System.out.println(sites);
-    }
-}
-```
-
-### TreeSet
-
-- 特点：TreeSet 是有序集合，底层基于红黑树实现，不允许重复元素。
-- 优点： 提供自动排序功能，适用于需要按顺序存储元素的场景。
-- 缺点： 性能相对较差，不允许插入 null 元素。
-
-## 映射（Maps）
-
-映射（Maps）用于存储键值对，常见的实现有 HashMap 和 TreeMap。
-
-```java
-Map<String, Integer> hashMap = new HashMap<>();
-Map<String, Integer> treeMap = new TreeMap<>();
-```
-
-### HashMap
-
-- 特点： 基于哈希表实现的键值对存储结构。
-- 优点： 高效的查找、插入和删除操作。
-- 缺点： 无序，不保证顺序。
-
-```java{.line-numbers}
-HashMap<Integer, String> Sites = new HashMap<>();
-```
-
-HashMap示例代码：
-
-```java
-package org.xijuangu;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
-public class ForEachDemo {
-    public static void main(String[] args) {
-        
-        HashMap<Integer, String> sites = new HashMap<>();
-
-        sites.put(1, "google");
-        sites.put(3, "facebook");
-        sites.put(5, "yahoo");
-        System.out.println("sites: " + sites);
-
-        HashMap<Integer, String> copy = new HashMap<>(sites);   // sites.clone()是浅拷贝
-        System.out.println("copy created: " + copy);
-
-        System.out.println("key 5 in sites: " + sites.get(5));
-
-        sites.remove(5);
-        System.out.println("key 5 removed from sites: " + sites);
-
-        sites.clear();
-        System.out.println("sites cleared: " + sites);
-        System.out.println("sites.isEmpty(): " + sites.isEmpty());
-
-        System.out.println("size of sites: " + sites.size());
-        System.out.println("size of copy: " + copy.size());
-
-        copy.forEach((key, value) -> System.out.println(key + " = " + value));
-
-        sites.putAll(copy);
-        System.out.println("sites.putAll(copy): " + sites);
-
-        sites.replaceAll((key, value) -> {
-            if(key == 3)
-                return value.toUpperCase();
-            else
-                return value;
-        });
-        System.out.println("sites.replaceAll(key, value) toUpperCase: " + sites);
-        // 单个字符想变成大写需要用:
-        // char c = 'c';
-        // c = Character.toUpperCase(c);
-
-        sites.replace(1, "newBing");
-        System.out.println("sites.replace(1, newBing): " + sites);
-
-        System.out.println("sites.containsKey(3): " + sites.containsKey(3));
-        System.out.println("sites.containsValve(\"baidu\"): " + sites.containsValue("baidu"));
-
-        //错误：ArrayList<String> myArray = (ArrayList<String>)sites.values();
-        System.out.println("sites.values(): " + sites.values());
-        ArrayList<String> myArray = new ArrayList<String>(sites.values());
-        System.out.println("sites.values() 返回一个 Collection，可以用来创建列表: " + myArray);
-
-        System.out.println("sites.keySet(): " + sites.keySet());
-        System.out.println("sites.entrySet() 返回一个键值对的set: " + sites.entrySet());
-
-
-        // 遍历Map的方法：
-
-        //第一种：普遍使用，由于二次取值,效率会比第二种和第三种慢一倍
-        System.out.println("通过Map.keySet遍历key和value：");
-        for (Integer key : sites.keySet()) {
-            System.out.println("key= "+ key + " and value= " + sites.get(key));
-        }
-
-        //第二种
-        System.out.println("通过Map.entrySet使用iterator遍历key和value：");
-        Iterator<Map.Entry<Integer, String>> it = sites.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, String> entry = it.next();
-            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
-        }
-
-        //第三种：无法在for循环时实现remove等操作
-        System.out.println("通过Map.entrySet遍历key和value");
-        for (Map.Entry<Integer, String> entry : sites.entrySet()) {
-            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
-        }
-
-        //第四种：只能获取values,不能获取key
-        sites.put(4, "FACEBOOK");
-        System.out.println("通过Map.values()遍历所有的value，但不能遍历key");
-        for (String v : sites.values()) {
-            System.out.println("value = " + v);
-        }
-    }
-}
-```
-
-### TreeMap
-
-- 特点： 基于红黑树实现的有序键值对存储结构。
-- 优点： 有序，支持按照键的顺序遍历。
-- 缺点： 插入和删除相对较慢。
-
-## 示例
-
-### ArrayList示例代码
+ArrayList示例代码:
 
 ```java{.line-numbers}
 package org.xijuangu;
@@ -465,6 +272,257 @@ public class Main {
             e = e * 10;
             System.out.print(e + " ");
         });
+    }
+}
+```
+
+### LinkedList
+
+- 特点： 双向链表，元素之间通过指针连接。
+- 优点： 插入和删除元素高效，迭代器性能好。
+- 缺点： 随机访问相对较慢。
+
+## 集合（Sets）
+
+集合（Sets）用于存储不重复的元素，常见的实现有 HashSet 和 TreeSet。
+
+```java
+Set<String> hashSet = new HashSet<>();
+Set<Integer> treeSet = new TreeSet<>();
+```
+
+### HashSet
+
+- 特点： 无序集合，基于HashMap实现。
+- 优点： 高效的查找和插入操作。
+- 缺点： 不保证顺序。
+
+```java{.line-numbers}
+package org.xijuangu;
+
+import java.util.HashSet;
+
+public class HashSetDemo {
+    public static void main(String[] args) {
+        HashSet<String> sites = new HashSet<>();
+        sites.add("google");
+        sites.add("facebook");
+        sites.add("twitter");
+        sites.add("youtube");
+        sites.add("google");        // 添加重复的元素无效
+        System.out.println(sites);
+
+        System.out.println("sites.contains(\"google\"): " + sites.contains("google"));
+
+        // 删除元素，成功返回true，失败返回false
+        System.out.println("sites.remove(\"google\"): " + sites.remove("google"));
+        System.out.println("google removed sites: " + sites);
+
+        System.out.println("sites.size(): " + sites.size());
+
+        sites.clear();
+        System.out.println("sites.clear(): " + sites);
+        System.out.println("sites.isEmpty(): " + sites.isEmpty());
+
+        sites.add("google");
+        sites.forEach(e -> {
+            if(e.equals("google")){
+                sites.add(e.toUpperCase());
+                sites.remove(e);
+            }
+        });
+        System.out.println(sites);
+    }
+}
+```
+
+### TreeSet
+
+- 特点：TreeSet 是有序集合，底层基于红黑树实现，不允许重复元素。
+- 优点： 提供自动排序功能，适用于需要按顺序存储元素的场景。
+- 缺点： 性能相对较差，不允许插入 null 元素。
+
+## 映射（Maps）
+
+映射（Maps）用于存储键值对，常见的实现有 HashMap 和 TreeMap。
+
+```java
+Map<String, Integer> hashMap = new HashMap<>();
+Map<String, Integer> treeMap = new TreeMap<>();
+```
+
+### HashMap
+
+- 特点： 基于哈希表实现的键值对存储结构。
+- 优点： 高效的查找、插入和删除操作。
+- 缺点： 无序，不保证顺序。
+
+```java{.line-numbers}
+HashMap<Integer, String> Sites = new HashMap<>();
+```
+
+HashMap示例代码：
+
+```java
+package org.xijuangu;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+public class ForEachDemo {
+    public static void main(String[] args) {
+        
+        HashMap<Integer, String> sites = new HashMap<>();
+
+        sites.put(1, "google");
+        sites.put(3, "facebook");
+        sites.put(5, "yahoo");
+        System.out.println("sites: " + sites);
+
+        HashMap<Integer, String> copy = new HashMap<>(sites);   // sites.clone()是浅拷贝
+        System.out.println("copy created: " + copy);
+
+        System.out.println("key 5 in sites: " + sites.get(5));
+
+        sites.remove(5);
+        System.out.println("key 5 removed from sites: " + sites);
+
+        sites.clear();
+        System.out.println("sites cleared: " + sites);
+        System.out.println("sites.isEmpty(): " + sites.isEmpty());
+
+        System.out.println("size of sites: " + sites.size());
+        System.out.println("size of copy: " + copy.size());
+
+        copy.forEach((key, value) -> System.out.println(key + " = " + value));
+
+        sites.putAll(copy);
+        System.out.println("sites.putAll(copy): " + sites);
+
+        sites.replaceAll((key, value) -> {
+            if(key == 3)
+                return value.toUpperCase();
+            else
+                return value;
+        });
+        System.out.println("sites.replaceAll(key, value) toUpperCase: " + sites);
+        // 单个字符想变成大写需要用:
+        // char c = 'c';
+        // c = Character.toUpperCase(c);
+
+        sites.replace(1, "newBing");
+        System.out.println("sites.replace(1, newBing): " + sites);
+
+        System.out.println("sites.containsKey(3): " + sites.containsKey(3));
+        System.out.println("sites.containsValve(\"baidu\"): " + sites.containsValue("baidu"));
+
+        //错误：ArrayList<String> myArray = (ArrayList<String>)sites.values();
+        System.out.println("sites.values(): " + sites.values());
+        ArrayList<String> myArray = new ArrayList<String>(sites.values());
+        System.out.println("sites.values() 返回一个 Collection，可以用来创建列表: " + myArray);
+
+        System.out.println("sites.keySet(): " + sites.keySet());
+        System.out.println("sites.entrySet() 返回一个键值对的set: " + sites.entrySet());
+
+
+        // 遍历Map的方法：
+
+        //第一种：普遍使用，由于二次取值,效率会比第二种和第三种慢一倍
+        System.out.println("通过Map.keySet遍历key和value：");
+        for (Integer key : sites.keySet()) {
+            System.out.println("key= "+ key + " and value= " + sites.get(key));
+        }
+
+        //第二种
+        System.out.println("通过Map.entrySet使用iterator遍历key和value：");
+        Iterator<Map.Entry<Integer, String>> it = sites.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, String> entry = it.next();
+            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
+        }
+
+        //第三种：无法在for循环时实现remove等操作
+        System.out.println("通过Map.entrySet遍历key和value");
+        for (Map.Entry<Integer, String> entry : sites.entrySet()) {
+            System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue());
+        }
+
+        //第四种：只能获取values,不能获取key
+        sites.put(4, "FACEBOOK");
+        System.out.println("通过Map.values()遍历所有的value，但不能遍历key");
+        for (String v : sites.values()) {
+            System.out.println("value = " + v);
+        }
+    }
+}
+```
+
+### TreeMap
+
+- 特点： 基于红黑树实现的有序键值对存储结构。
+- 优点： 有序，支持按照键的顺序遍历。
+- 缺点： 插入和删除相对较慢。
+
+## StringBuilder & StringBuffer
+
+StringBuilder 和 StringBuffer 类用以对字符串进行修改。和 String 类不同的是，StringBuilder 和 StringBuffer 类的对象能够被多次修改，**并且不产生新的未使用对象**。
+
+StringBuilder 和 StringBuffer 之间的最大不同在于 StringBuilder 的方法不是线程安全的（不能同步访问）。但由于 StringBuilder 相较于 StringBuffer 有速度优势，所以多数情况下建议使用 StringBuilder 类。
+
+使用示例：
+
+```java{.line-numbers}
+public class StringBuilderDemo {
+    public static void main(String[] args){
+        StringBuilder sb = new StringBuilder(10);   // 10是初始最大容量，如超出会自动扩大
+        System.out.println("capacity: " + sb.capacity());   // 表示当前最大容量，而不是有多少字符
+        sb.ensureCapacity(15);              // 确保容量至少为15，如小于15则使用扩容算法，直到大于等于15
+        System.out.println("capacity: " + sb.capacity());   // StringBuilder 的新容量 = (当前容量 * 2) + 2。
+
+        sb.append("Xijuangu");
+        System.out.println(sb);
+        sb.append("!");
+        System.out.println(sb);
+
+        System.out.println("length: " + sb.length());   // 表示当前有多少字符
+
+        sb.insert(6, "Java");
+        System.out.println("inserted: " + sb);
+
+        sb.delete(5,8);
+        System.out.println("deleted: " + sb);
+
+        sb.reverse();
+        System.out.println("reversed: " + sb);
+
+        sb.replace(0,1,"?");    //替换包括0不包括1
+        System.out.println("replaced: " + sb);
+        sb.replace(0,0,"#");    //0,0表示在开头插入，不替换任何部分
+        System.out.println("replaced: " + sb);
+
+        System.out.println("charAt: " + sb.charAt(10));
+
+        char[] chars = new char[11];
+        sb.getChars(0,11,chars,0);  // 从sb中取出字符到字符数组，包括0不包括11，共11个字符
+        System.out.print(chars);
+
+        System.out.println("\nindexOf(\"gava\"): " + sb.indexOf("gava"));   //返回第一次出现指定字符串的位置
+        System.out.println("lastIndexOf(\"gava\"): " + sb.lastIndexOf("gava"));   //返回最后一次出现指定字符串的位置
+
+        sb.setCharAt(10,'Q');
+        System.out.println("setCharAt(10,'Q'): " + sb); //修改索引为10处的字符，注意不是字符串，字符串要用replace
+
+        sb.setLength(5);
+        // setLength调整内容的长度，但capacity不变
+        System.out.println("setLength(5): " + sb + "    But capacity = " + sb.capacity());      //调整长度，超出直接扔掉
+
+        String str = sb.substring(3, 5);
+        System.out.println("substring(3,5): " + str);   //或者substring(3)，会返回从3到末尾的子串
+
+        str = sb.toString();
+        System.out.println("toString: " + str); //将sb转换为String
     }
 }
 ```
