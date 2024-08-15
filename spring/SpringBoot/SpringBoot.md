@@ -79,6 +79,51 @@ AOP 允许通过注解声明切面和切点，在方法执行前后添加额外�
         }
         ```
 
+    - `@Transactional` 注解的基本用法
+        1. 只能用于 public 方法  
+        `@Transactional` 只能应用于 public 方法。如果将其应用于 protected 或 private 方法，虽然不会报错，但注解不会生效。这是因为 Spring AOP 代理机制的限制，它无法拦截非 public 方法。
+        2. 默认只回滚非检查型异常  
+        `@Transactional` 默认情况下只会回滚非检查型异常（RuntimeException 及其子类）和 Error。如果需要对其他类型的异常（例如检查型异常 Exception）进行回滚，可以使用 `rollbackFor` 属性显式指定：  
+
+            ```JAVA
+            @Transactional(rollbackFor = Exception.class)
+            ```  
+
+            也可以使用 `noRollbackFor` 指定哪些异常类型不应触发事务回滚：
+
+            ```JAVA
+            @Transactional(noRollbackFor = CustomException.class)
+            ```
+
+        3. 事务的传播行为  
+        事务的传播行为是指在执行带有事务的方法时，如果该方法被另一个带有事务的方法调用，应该如何处理当前事务。  
+        `@Transactional` 提供了 `propagation` 属性，用于定义事务的传播行为。常见的传播行为包括：  
+            - `PROPAGATION_REQUIRED`：支持当前事务，如果当前没有事务，则创建一个新事务。适用于大多数情况，通常我们希望当前方法在现有事务中执行。如果没有现有事务，则创建一个新事务。  
+            - `PROPAGATION_REQUIRES_NEW`：新建事务，如果当前存在事务，就把当前事务挂起。适用于需要强制性新事务的场景，例如日志记录或审计操作，这些操作不应该被外部事务回滚影响。也即，外回滚不影响内。  
+            - `PROPAGATION_NESTED`：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则创建一个新事务。适用于需要嵌套事务的情况，嵌套事务可以独立提交或回滚。也即，内回滚不影响外。
+            - 这些传播行为可以通过 Propagation 枚举来定义：
+
+                ```JAVA
+                @Transactional(propagation = Propagation.REQUIRES_NEW)
+                ```
+
+        4. 无法回滚被捕获的异常：  
+        如果异常在方法内部被 `try-catch` 块捕获并处理，事务将不会回滚。为确保事务能够根据捕获的异常回滚，可以在捕获异常后显式地抛出新异常。
+        5. 使用 timeout 参数
+        `@Transactional` 提供了 timeout 属性，用于指定事务的超时时间。如果超过指定的时间，事务将自动回滚。  
+
+            ```JAVA
+            @Transactional(timeout = 5)
+            ```
+
+        6. 只对被 Spring 容器管理的 Bean 生效  
+        `@Transactional` 仅对 Spring 容器管理的 Bean 的方法生效。如果将该注解应用于未被 Spring 容器管理的类或方法，事务管理将不会生效。
+    - 事务控制的实际流程
+        1. 代理对象创建：Spring 为带有 `@Transactional` 注解的 Service 类创建代理对象，拦截对其中方法的调用，并调用代理对象中的对应方法。代理对象中的方法插入了额外的逻辑，在事务管理中具体表现为对事物的开启、提交和回滚的逻辑。
+        2. 事务处理：代理对象与事务管理器交互，开启事务或决定是否加入现有事务。
+        3. 执行目标方法：代理对象执行实际的方法。
+        4. 异常捕获与回滚：如果目标方法抛出异常，代理对象捕获异常并触发事务回滚。
+        5. 事务提交：如果目标方法成功执行，代理对象通知事务管理器提交事务。
 6. 属性注入（Property Injection）  
 Spring 支持将外部化配置（如 properties 文件、环境变量）注入到 Bean 中。
     - `@Value`  
