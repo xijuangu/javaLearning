@@ -523,6 +523,123 @@ public class StringBuilderDemo {
 
         str = sb.toString();
         System.out.println("toString: " + str); //将sb转换为String
+
+        for (char c : sb.toString().toCharArray()) {
+            system.out.print(c + " ");
+        }
+        //对sb中的字符遍历
     }
 }
 ```
+
+## Stack 栈
+
+Stack 是 Java 中的一种后进先出（LIFO，Last In First Out）的数据结构，继承自 Vector 类，所以它可以使用 Vector 类中的所有方法。以下是一些常见的 Vector 用法：
+
+- add(E element): 在 Vector 的末尾添加一个元素。
+- add(int index, E element): 在指定位置插入元素。
+- get(int index): 获取指定位置的元素。
+- firstElement(): 获取第一个元素。
+- lastElement(): 获取最后一个元素。
+- remove(int index): 删除指定位置的元素。
+- clear(): 清空整个栈。
+- size(): 返回栈的元素数量。
+- isEmpty(): 检查栈是否为空。
+
+```java{.line-numbers}
+    Stack<Integer> stack = new Stack<>();
+    stack.push(1);
+    stack.push(2);
+    stack.add(1, 3);    //add可以从指定位置加入，push只能从栈顶加入
+    System.out.println(stack);
+
+    System.out.println(stack.firstElement());   //firstElement()返回第一个元素
+    System.out.println(stack.lastElement());    //lastElement()返回最后一个元素
+    System.out.println(stack.get(1));           //返回指定位置的元素。栈的位置编号规则为：栈底为1，向栈顶依次+1
+    System.out.println(stack.peek());           //返回栈顶的元素
+
+    System.out.println(stack.remove(1));  //删除元素，并返回被删除的元素
+    System.out.println(stack);
+
+    System.out.println(stack.size());
+
+    stack.clear();
+    System.out.println(stack);
+    System.out.println(stack.isEmpty());
+
+    stack.push(1);
+    stack.push(4);
+    stack.push(7);
+    System.out.println(stack);
+    stack.pop();
+    System.out.println(stack);
+            
+    System.out.println(stack.search(2));    //查找目标对象所在的位置，不存在则返回-1
+    System.out.println(stack.search(7));
+    System.out.println(stack.search(1));
+```
+
+## Queue 队列
+
+Queue 是一种先进先出（FIFO，First In First Out）的数据结构。它继承自 Collection 接口，所以可以使用 Collection 中的方法。又因为它是接口，所以必须使用它的实现类。
+
+队列的实现类有很多，可以以有界与无界为区分，也可以以使用情景为区分，例如普通队列、阻塞队列、双端队列、优先级队列、并发队列、同步队列、阻塞队列等。
+
+`LinkedList` 普通队列中的常用方法：
+
+- `add(E e)` 和 `offer(E e)`：添加元素到队列
+- `remove()` 和 `poll()`：移除并返回队列头部的元素。其中在添加失败时（如内存满），`add` 和 `remove` 方法会直接抛出异常，`offer` 和 `poll` 方法返回false。
+- `element()` 和 `peek()`：获取队列头部的元素，但不移除。其中在队列为空时，`element()` 方法会直接抛出异常、`peek()` 会返回 `null`。
+- `isEmpty()`：检查队列是否为空
+- `size()`：返回队列中元素的个数
+- `clear()`：清空队列中的所有元素
+
+`ArraryDeque` 双端队列中的常用方法：
+
+- `addFirst()` 与 `offerFirst()`: 在双端队列的开头添加指定的元素。如果双端队列已满，则 add 引发异常、offer 返回 false。
+- `addLast()` 与 `offerLast()`: 在双端队列的末尾添加指定的元素。如果双端队列已满，则 add 引发异常、offer 返回 false。
+- `getFirst()` 与 `peekFirst()`: 返回双端队列的第一个元素。如果双端队列为空，则 get 引发异常，peek 返回 null。
+- `getLast()` 与 `peekLast()`: 返回双端队列的最后一个元素。如果双端队列为空，则 get 引发异常，peek 返回 null。
+- `removeFirst()` 与 `pollFirst()`: 返回并删除双端队列的第一个元素。如果双端队列为空，则 remove 引发异常，poll 返回 null。
+- `removeLast()` 与 `pollLast()`: 返回并删除双端队列的最后一个元素。如果双端队列为空，则 remove 引发异常，poll 返回 null。
+
+## 实例
+
+1. String 类型的数字转换为 int 类型或 Integer 类型，以及 int 类型或 Integer 类型的数字转换为 String 类型。
+
+    ```java{.line-numbers}
+    class Solution150 {
+        public int evalRPN(String[] tokens) {
+            Stack<String> stack = new Stack<>();
+            for(String s : tokens){
+                stack.push(s);
+                if("+".equals(s)){
+                    stack.pop();
+                    int temp = Integer.parseInt(stack.pop()) + Integer.parseInt(stack.pop());   // 如果是integer类型的temp就可以用Integer.valueOf()
+                    stack.push(Integer.toString(temp)); // int类型本身没有toString，但是Integer有静态方法toString(int)与非静态方法toString，因此此处既可以用Integer.toString(temp)，也可以直接将temp定义为Integer类型然后temp.toString
+                }
+                if("*".equals(s)) {
+                    stack.pop();
+                    int temp = Integer.parseInt(stack.pop()) * Integer.parseInt(stack.pop());
+                    stack.push(Integer.toString(temp));
+                }
+                if("-".equals(s)) {
+                    stack.pop();
+                    int temp = Integer.parseInt(stack.pop()) - Integer.parseInt(stack.pop());
+                    temp = -temp;
+                    stack.push(Integer.toString(temp));
+                }
+                if("/".equals(s)) {
+                    stack.pop();
+                    int temp1 = Integer.parseInt(stack.pop());
+                    int temp2 = Integer.parseInt(stack.pop());
+                    int temp = temp2 / temp1;
+                    stack.push(Integer.toString(temp));
+                }
+            }
+            return Integer.valueOf(stack.peek());
+        }
+    }
+    ```
+
+2. 待补充
