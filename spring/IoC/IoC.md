@@ -328,6 +328,27 @@ System.out.println(userService);
     UserService userService = (UserService) beanFactory.getBean("userService");
     ```
 
+在这个例子中，`<property>` 标签的作用是将 `userDao` 对象注入到 `UserServiceImpl` 类的 `userDao` 属性中。
+
+具体来说，`<property>` 的实际作用如下：
+
+1. **依赖注入（Dependency Injection）**：  
+   通过 `<property>` 标签，Spring 容器会将 `id` 为 `userDao` 的 bean 自动注入到 `UserServiceImpl` 类的 `userDao` 属性中。也就是说，`UserServiceImpl` 不需要自己创建或管理 `UserDaoImpl` 的实例，Spring 会根据配置自动完成注入，这就是典型的依赖注入。
+
+2. **解耦**：  
+   通过这种方式，`UserServiceImpl` 和 `UserDaoImpl` 之间实现了松耦合。`UserServiceImpl` 并不关心 `userDao` 的具体实现是 `UserDaoImpl` 还是其他实现类。只要在配置文件中更改 `ref`，你就可以轻松替换 `userDao` 的实现类，而不需要修改 `UserServiceImpl` 的代码。
+
+3. **管理对象的生命周期**：  
+   Spring 通过 `bean` 标签管理 `userDao` 和 `userService` 对象的生命周期。你不需要手动创建或销毁这些对象，Spring 容器会负责处理这些过程，并确保它们按照你所定义的方式被初始化和注入。
+
+### 实际作用：
+- 在这个配置中，`UserServiceImpl` 依赖 `UserDaoImpl` 来完成某些业务逻辑（例如数据库访问等）。`<property>` 标签的作用就是将 `UserDaoImpl` 的实例注入给 `UserServiceImpl`，使得 `UserServiceImpl` 可以调用 `UserDaoImpl` 中的方法来完成所需的功能。
+  
+  例如，`UserServiceImpl` 类可能有一个 `setUserDao(UserDao userDao)` 方法用于注入 `UserDao`，而这个 `<property>` 标签的作用就是调用这个 setter 方法，将 `userDao` 实例传递给 `UserServiceImpl`。
+
+### 如果没有这个 `<property>`：
+如果你不使用这个 `<property>` 标签，`UserServiceImpl` 中的 `userDao` 属性将不会被注入对象，可能会为 `null`。如果你在业务逻辑中调用了 `userDao` 的方法，就会发生 `NullPointerException` 错误。因此，这个配置是确保对象依赖注入并正常工作的关键步骤。
+
 ## ApplicationContext快速入门
 
 ApplicationContext 称为Spring容器，内部封装了BeanFactory，比BeanFactory功能更丰富更强大，使用 ApplicationContext 进行开发时，xml配置文件的名称习惯写成applicationContext.xml
