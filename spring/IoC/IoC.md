@@ -341,13 +341,16 @@ System.out.println(userService);
 3. **管理对象的生命周期**：  
    Spring 通过 `bean` 标签管理 `userDao` 和 `userService` 对象的生命周期。你不需要手动创建或销毁这些对象，Spring 容器会负责处理这些过程，并确保它们按照你所定义的方式被初始化和注入。
 
-### 实际作用：
+### 实际作用
+
 - 在这个配置中，`UserServiceImpl` 依赖 `UserDaoImpl` 来完成某些业务逻辑（例如数据库访问等）。`<property>` 标签的作用就是将 `UserDaoImpl` 的实例注入给 `UserServiceImpl`，使得 `UserServiceImpl` 可以调用 `UserDaoImpl` 中的方法来完成所需的功能。
   
   例如，`UserServiceImpl` 类可能有一个 `setUserDao(UserDao userDao)` 方法用于注入 `UserDao`，而这个 `<property>` 标签的作用就是调用这个 setter 方法，将 `userDao` 实例传递给 `UserServiceImpl`。
 
-### 如果没有这个 `<property>`：
-如果你不使用这个 `<property>` 标签，`UserServiceImpl` 中的 `userDao` 属性将不会被注入对象，可能会为 `null`。如果你在业务逻辑中调用了 `userDao` 的方法，就会发生 `NullPointerException` 错误。因此，这个配置是确保对象依赖注入并正常工作的关键步骤。
+### 如果没有这个 `<property>`
+
+如果你不使用这个 `<property>` 标签，`UserServiceImpl` 中的 `userDao` 属性将不会被注入对象，可能会为 `null`。如果你在业务逻辑中调用了 `userDao` 的方法，就会发生 `NullPointerException` 错误。因此，这个配置是确保对象依赖注入并正常工作的关键步骤。但是当然也可以选择手动调用setter方法完成依赖注入，但就没有了上面提到的那么多优势。
+在业务中，也不是所有对象都要交给spring管理的，比如各种传入的参数对象，这些对象都是临时创建的，不需要交给spring管理。也有很多对象是需要交给spring管理的，比如各种工具类对象。那么不需要交给spring管理的对象自然也不需要使用 `<property>` 标签。
 
 ## ApplicationContext快速入门
 
