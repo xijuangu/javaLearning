@@ -690,7 +690,6 @@ Spring Bean的生命周期是从 Bean 实例化之后，即通过 **反射** 创
 ### bean的初始化过程
 
 - bean实例的属性填充 *
-- Bean实例的属性填充
 - Aware接口属性注入
 - BeanPostProcessor的before()方法回调
 - InitializingBean接口的初始化方法回调
@@ -755,22 +754,24 @@ Spring提供了三级缓存存储 完整Bean实例 和 半成品Bean实例 ，�
 ```java{.line-numbers}
 public class DefaultSingletonBeanRegistry ... {
     //一级缓存
-    //最终存储单例Bean成品的容器，即实例化和初始化都完成的Bean
+    //存储的是完全初始化且已经准备好的单例 bean 对象。这是单例对象最终的存放位置
     Map<String, Object> singletonObjects = new ConcurrentHashMap(256);
     //二级缓存
-    //早期Bean单例池，缓存半成品对象，且当前对象已经被其他对象引用了
+    //存储的是早期暴露出来的半成品对象，即构造函数已经执行完毕，但依赖注入和一些后置处理器（如 AOP 代理等）可能还未完成的对象。
+    //它是为了解决循环依赖时，将对象提前暴露出来，以供其他对象引用。
     Map<String, Object> earlySingletonObjects = new ConcurrentHashMap(16);
     //三级缓存
-    //单例Bean的工厂池，缓存半成品对象，对象未被引用，使用时在通过工厂创建Bean
+    //存储的是一个工厂对象，用于延迟创建bean实例，可以根据需要通过调用工厂的 getObject() 方法来创建或获取早期的 bean 实例并存入二级缓存。
     Map<String, ObjectFactory<?>> singletonFactories = new HashMap(16);
 }
 ```
 
 ![alt text](image-5.png)
 
-- 三级缓存：在上图第一步"实例化Service"时，为该半成品Service对象创建一个对应的ObjectFactory，在ObjectFactory的getObject()方法中再return该半成品Service对象，相当于在这个半成品对象外面套了个壳子存起来，需要用时调用ObjectFactory的getObject()方法。
-- 在上图中，接下来还要依次从一级、二级、三级缓存中找UserDao，如果都没有，再用如上方法创建一个UserDao存入三级缓存。
-- 然后还要再找容器中是否有UserService，在三级缓存中找到了它，然后注入：先把UserService从三级缓存中移除，再存入二级缓存中。然后就可以继续执行最后一步"直接赋值后方法返回，执行后续初始化环节"。
+- 三级缓存：当 Spring 创建一个单例 bean 时，首先从 singletonObjects 中查找。如果没有找到，则进入下一个缓存级别。Spring 会检查 earlySingletonObjects，看这个 bean 是否被提前暴露出来了。如果已经有一个半成品对象，就直接使用该对象，以避免循环依赖时重复创建。如果 earlySingletonObjects 中也没有找到，Spring 会查找 singletonFactories。如果存在一个工厂方法，Spring 会通过该工厂创建一个早期引用，通常会在工厂方法中生成该 bean 或进行代理处理。
+- 使用 singletonFactories 提供了延迟创建的机制，这确保了只有在真正需要提前曝光对象时才会将它存入 earlySingletonObjects。如果没有循环依赖或者需要提前曝光，Spring 会尽量让对象完全初始化后直接加入 singletonObjects。
+- 如果三级缓存也没找到，说明该bean还未实例化，此时Spring会先调用构造方法（还没有进行依赖注入和其他初始化操作），然后在实例创建后但依赖注入之前，将一个工厂方法（ObjectFactory）存入三级缓存（singletonFactories），目的是为了让其他依赖该 bean 的对象能够通过这个工厂获取 bean 的早期引用。
+- 所谓“存入工厂方法”其实就是向工厂对象中的一个Map中添加一个键值对，key为beanName，value为工厂对象本身。
 
 ##### 常用的Aware接口
 
