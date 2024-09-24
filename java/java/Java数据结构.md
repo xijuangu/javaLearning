@@ -12,6 +12,8 @@ int[] array = new int[5];
 - 优点： 随机访问元素效率高。
 - 缺点： 大小固定，插入和删除元素相对较慢。
 
+详细可见 `八股` 中 `数组.md`
+
 ## 列表（Lists）
 
 Java 提供了多种列表实现，如 ArrayList 和 LinkedList。
@@ -642,4 +644,4 @@ Queue 是一种先进先出（FIFO，First In First Out）的数据结构。它�
     }
     ```
 
-2. 待补充
+2. String的replaceAll()方法与上面的Map和List的replaceAll()的方法不同，后者可以用Lambda表达式直接操作原对象中的数据内容，而String的replaceAll()方法需要传入两个参数，第一个参数是正则表达式，第二个参数是需要替换成的字符串，并且会返回一个替换后的字符串，不操作原字符串对象。
