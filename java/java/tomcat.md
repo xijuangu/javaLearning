@@ -102,7 +102,7 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
      - Wrapper 再将 Response 传回给 Context、Host、Engine，最终通过 Connector 返回给客户端。
      - 客户端接收到 HTTP 响应，浏览器解析并显示结果。
 
-Tomcat工作全流程详细如下（别看了也不知道对不对，看到上面应该就够了）：
+Tomcat工作全流程详细如下 ***（别看了也不知道对不对，看到上面应该就够了）***：
 
 1. 客户端请求
    - 客户端（如浏览器） 发起一个 HTTP 请求，输入一个 URL 或点击一个链接，如 `http://localhost:8080/myapp/hello`
