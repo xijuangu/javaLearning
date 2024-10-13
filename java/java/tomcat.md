@@ -94,7 +94,7 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
    - 工作流程：
      - Wrapper 将 Request 和 Response 对象传递给具体的 Servlet 实例。
      - Servlet 执行相应的业务逻辑（如处理表单数据、查询数据库、生成动态 HTML 等）。
-     - 处理完成后，Servlet 将结果写入 Response 对象中，生成响应数据（如 HTML、JSON、文件等）。
+     - 处理完成后，Servlet 将结果写入 Response 对象中（如 `HTTP.success` 等），生成响应数据（如 HTML、JSON、文件等）。
      - 最终，Response 被返回到客户端。
 8. 将响应返回给客户端
    - 工作流程：
