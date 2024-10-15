@@ -11,7 +11,7 @@ HTTP协议是浏览器与服务器之间的数据传送协议。作为应用层�
 2. 浏览器发起TCP连接请求
 3. 服务器持续监听特定端口，接收到请求后建立连接，此处涉及三次握手
 4. 三次握手后客户端确认连接建立，就可以开始根据HTTP协议封装用户的请求，生成HTTP格式的数据包
-5. 客户端向服务器发送该格式的数据包
+5. 客户端向服务器通过TCP协议发送该格式的数据包
 6. 服务器按HTTP格式解析该数据包
    - 服务器在该过程中会接收到由TCP协议封装并传输的、HTTP格式的数据包
    ![alt text](image-3.png)
@@ -44,7 +44,8 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
 
 根据上面所述，我们已知Tomcat需要的功能：
 
-1. 处理Socket连接，负责网络字节流与ServletRequest和ServletResponse对象的转化。
+1. 处理Socket连接，通过Socket接收到数据后要负责将网络字节流转化为ServletRequest和ServletResponse对象。
+   > Socket套接字是TCP/IP协议栈中用于在网络上进行通信的编程接口，它可以绑定并监听某个端口，等待客户端的连接请求，接受客户端的连接请求，建立通信通道，然后发送或接收数据。当Tomcat启动时，它会启动一个或多个Connector，每个Connector都通过Socket绑定到特定的IP地址和端口（例如默认的8080端口）。这个过程会调用ServerSocket类中的bind()方法，监听端口的连接请求。
 2. 加载和管理Servlet，以及具体处理Request请求。
 
 因此Tomcat设计了两个核心组件连接器(connector)和容器(container)来分别做这两件事情。连接器负责对外交流，容器负责内部处理。
@@ -72,6 +73,9 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
    - 作用：Engine 是 Service 的核心组件，负责管理多个虚拟主机（Host）和将请求路由到正确的 Host。
    - 工作流程：
      - Engine 作为第一个接收请求的容器，它根据请求中的 域名 或 IP 地址，将请求分发到对应的 Host。
+     > 在实际部署中，多个域名可以共用同一个IP地址。这个机制通常称为虚拟主机或基于名称的虚拟主机。浏览器在发送HTTP请求时，会在请求头中包含Host字段，Tomcat利用该字段来确定应该使用哪个虚拟主机。例如：
+      `http://example1.com` 和 `http://example2.com` 解析为相同的IP地址。
+      Tomcat通过解析请求头的Host字段，确定该请求是要访问`example1.com`，还是要访问`example2.com`，并将请求转发给相应的虚拟主机处理。
      - 如果请求中的域名未匹配到特定的 Host，则使用 Engine 的 默认主机（defaultHost） 处理请求。
 4. Host（虚拟主机）
    - 作用：Host 表示一个虚拟主机，允许在同一个 Tomcat 实例中运行多个站点。每个 Host 可以处理不同的域名。
@@ -81,10 +85,10 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
 5. Context（上下文 / Web 应用）
    - 作用：Context 代表一个具体的 Web 应用程序，通常对应一个部署在 Tomcat 中的 .war 文件或目录。每个 Context 都有一个唯一的上下文路径（如 /myapp）。
    - 工作流程：
-     - Host 将请求中的 路径部分 与各个 Context 的上下文路径进行匹配。比如 /myapp 对应到 myapp 应用。
+     - Host 将请求中的 路径部分 与各个 Context 的上下文路径进行匹配。比如 /myapp 对应到 myapp 应用，也就是 myapp 所指向的业务类。
      - 匹配到正确的 Context 后，Context 将继续查找匹配的资源（如 Servlet 或静态文件）。
 6. Wrapper（Servlet 包装器）
-   - 作用：Wrapper 是对每个 Servlet 的包装，它负责管理和调用具体的 Servlet 实例。
+   - 作用：Wrapper 是对每个 Servlet 的包装，它负责管理和调用具体的 Servlet 实例，也即业务类。
    - 工作流程：
      - Context 通过 URL 的 剩余路径（上下文路径之后的部分）来查找与请求路径匹配的 Servlet。
      - 例如，URL 为 /myapp/hello，上下文路径 /myapp 后面的 /hello 部分用于匹配具体的 Servlet。
