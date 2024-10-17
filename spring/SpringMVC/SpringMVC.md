@@ -24,18 +24,13 @@ Spring MVC (Model-View-Controller) 是 Spring 框架的一部分，是一种**�
 
 ![image-20240723104823958](image-20240723104823958.png)
 
-在传统的 Web 应用架构中，一个Servlet只能处理一个请求，因此我们就有了 MVC 模式，将 Web 层中的 Servlet拆成了三块：Model-View-Controller。由控制器（Controller）接收客户端请求并调用业务逻辑，然后返回数据模型（Model）。但是模型对象客户端是无法读取的，因此，要么把模型数据转换成其他形式（如 JSON）使得客户端可以间接解析、读取数据，要么生成动态页面（如 JSP 文件）将页面抽取出来与模型结合处理，然后由视图（View）生成最终的输出内容（如 JSP 文件转换成的 HTML 页面 或 JSON 数据）。这样处理下来，一个 controller 就可以处理多个请求了。
+在传统的 Web 应用架构中，Servlet本身的职责相对底层，通常负责直接处理HTTP请求、解析参数、生成响应。这种架构下，由于Servlet往往需要处理大量与请求、响应、会话管理等相关的细节，开发效率较低，代码也容易复杂。因此，我们有了MVC模式，通过将Web层中的职责分离，将应用的结构拆分为三部分：Model（模型）、View（视图）、Controller（控制器）。由Controller接收客户端请求并调用业务逻辑，然后返回数据，Model就负责存储和处理这些业务数据，以便转交给调用者。客户端无法直接读取Model对象，因此就需要View将Model中的数据转换为用户可以理解的形式，比如HTML页面、JSON数据或动态页面（JSP文件）的输出。
 
 ![image-20240723104707016](image-20240723104707016.png)
 
-现代开发常常使用的是异步调用、前后端分离的形式，而非传统的 MVC。在这种情况下，后端服务器中的 View 会将 Model 中的数据转换成 JSON 格式的数据返回给前端页面，前端页面在发送请求并收到 JSON 数据后，会将数据抽取出来，再按照前端的逻辑组织成完整的页面反馈给浏览器。因此就有了 SpringMVC ，在现代 Spring 框架下的 SpringMVC 中，我们可以使用各种注解（如@ResponseBody，直接将返回的模型数据转换成 JSON，下文会具体介绍），更便捷地进行更符合现代 MVC 框架的开发。
+现代开发常常使用的是异步调用、前后端分离的形式，而非传统的 MVC。在这种情况下，MVC被拆分成 MC（后端）和 V（前端）。后端不再负责生成HTML页面，而是通过API接口（REST API、GraphQL）提供数据。这些API返回JSON或XML等格式的数据，供前端消费。而前端框架（如React、Vue、Angular）负责构建用户界面，接管了传统View的职责。前端通过调用后端提供的API获取数据，将数据渲染为页面或其他用户可见的内容（如图表、表单等）。因此就有了 SpringMVC，在现代 Spring 框架下的 SpringMVC 中，我们可以使用各种注解（如@ResponseBody，将控制器方法的返回值直接转换为指定格式（如JSON或XML），下文会具体介绍），更便捷地进行更符合现代 MVC 框架的开发。
 
 ![alt text](image.png)
-
-- 实现方式:
-  - 模型（Model）：负责数据和业务逻辑，通常包含数据存储、检索和业务规则。
-  - 视图（View）：包含展示逻辑，将模型的数据渲染为用户界面，不包含业务逻辑。
-  - 控制器（Controller）：接收用户的输入，调用模型和视图去完成用户的请求。
 
 ## Controller
 
@@ -59,7 +54,8 @@ public class UserController {
         return "user login";
     }
     
-    @RequestMapping(value = "/user/register", method = RequestMethod.POST)              // 只处理发送到该路径的POST请求
+    @RequestMapping(value = "/user/register",
+                     method = RequestMethod.POST)  //只处理发送到该路径的POST请求
     public String register() {
         return "user register";
     }
