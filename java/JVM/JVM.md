@@ -98,8 +98,8 @@ JVM提供了即时编译 (Just-In-Time 简称JIT) 进行性能的优化，最终
 - Methodref：表示一个方法的符号引用。
 - InterfaceMethodref：表示一个接口方法的符号引用。
 
-索引（左边一列）：每个常量在常量池中的位置，用 # 符号表示。
-内容（右边一列）：每个常量的类型和具体值。
+索引：每个常量在常量池中的位置，用 # 符号表示。
+内容：每个常量的类型和具体值。例如`#1 = Methodref          #6.#15`，`#1` 为索引，`#6.#15` 对应的内容 `java/lang/System.out:Ljava/io/PrintStream;` 就是具体值。
 
 ```less
 Constant pool:
