@@ -8,6 +8,22 @@ SUM 函数用于计算数值列的总和。它 **忽略 NULL 值**。
 SELECT SUM(column_name) FROM table_name;
 ```
 
+当使用 SUM() 函数与其他列时，必须确保在 GROUP BY 子句中包含所有非聚合列。不在 GROUP BY 子句中的列名 不能出现在 SELECT 子句的 非聚合函数表达式 中。在下例中，如果 department 列不在 GROUP BY 子句中，就会报错
+
+```sql
+SELECT department, SUM(salary) AS total_salary
+FROM employees
+GROUP BY department;
+```
+
+或者与其他聚合函数并列使用：
+
+```sql
+SELECT SUM(salary) AS total_salary, 
+       COUNT(*) AS employee_count
+FROM employees;
+```
+
 ## CASE 表达式
 
 CASE 表达式用于在查询中实现条件逻辑。
@@ -229,3 +245,18 @@ GROUP BY sno;
     - A是废除，明显错误；
     - B C权限太大，没必要；
     - D是正确操作，给他相应字段查询权限即可。
+
+## JDBC
+
+JDBC（Java DataBase Connectivity）是一种用于执行 SQL 语句的 Java API，在 java.sql 下，是 Java 和数据库之间的一个桥梁，是一个规范而不是一个实现，能够交给数据库执行 SQL 语句。具体讲就是通过 Java 连接各种数据库，并对表中数据执行增、删、改、查等操作的技术。
+
+本质上，JDBC 的作用和图形化客户端的作用相同，都是发送 SQL 操作数据库。差别在图形化界面的操作是图形化、傻瓜化的，而 JDBC 则需要通过编码完成图形操作时的效果。
+
+也就是说，JDBC 本质上也是一种发送 SQL 操作数据库的 client 技术，只不过需要通过 Java 编码完成。
+
+jdbc 操作数据库的步骤如下：
+
+1. DriverManager 加载数据库驱动
+2. Connection 获得数据库连接
+3. Statement 获得执行SQL语句的 PreparedStatement 或者 Statement
+4. 处理 ResultSet 结果集
