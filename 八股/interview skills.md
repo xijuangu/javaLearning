@@ -22,6 +22,4 @@ I bring a strong work ethic, adaptability, and team spirit. I can handle high-st
 
 I am committed to efficient, detail-oriented work. I am a quick learner and I'm always looking for new challenges.
 
-I am looking for an opportunity where I can bring my technical strengths in backend and risk management, contribute to your team with new insights, and grow alongside the company. 
-
-My goal is to add value by helping enhance the security and efficiency of your technology processes, aligning with EY’s mission of sustainable value creation.
+I am looking for an opportunity where I can bring my technical strengths in backend and risk management, and contribute to your team. 
