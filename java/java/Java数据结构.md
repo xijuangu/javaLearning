@@ -1,5 +1,7 @@
 # Java 数据结构
 
+[常用数据结构与方法](https://blog.csdn.net/m0_74097410/article/details/131721914)
+
 ## 数组（Arrays）
 
 数组（Arrays）是一种基本的数据结构，可以存储固定大小的相同类型的元素。
@@ -60,7 +62,9 @@ Arrays数组转化为ArrayList类型：
 String[] array = {"Hello", "World", "Java"};
 
 // 将数组转换为 List
-// Arrays.asList(array) 实际上返回的是 Arrays$ArrayList 类型的实例，它是 Arrays 类的一个内部私有静态类，继承自 AbstractList 并实现了 List 接口。它返回的这个对象是一个固定大小的 List，其底层数据结构是传入的数组。因此可以用 List 类型的变量来引用它，并使用 List 接口中的方法，但不能改变其大小。这个内部类与 java.util.ArrayList 是不同的。
+// Arrays.asList(array) 实际上返回的是 Arrays$ArrayList 类型的实例，继承自 AbstractList 并实现了 List 接口。
+// 它是一个固定大小的 List，其底层数据结构是传入的数组。因此可以用 List 类型的变量来引用它，并使用 List 接口中的方法。
+// 这个内部类与 java.util.ArrayList 是不同的。
 List<String> list = Arrays.asList(array);
 
 // 不能直接赋值给 ArrayList 类型变量

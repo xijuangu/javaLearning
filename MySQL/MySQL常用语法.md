@@ -221,6 +221,73 @@ WHERE class IN ('English', 'Math')
 GROUP BY sno;
 ```
 
+## DDL
+
+DDL（Data Definition Language）语句：数据定义语言，主要是进行定义/改变表的结构、数据类型、表之间的链接等操作。常用的语句关键字有 CREATE、DROP、ALTER 等。
+
+```sql
+CREATE DATABASE 数据库名;
+
+CREATE TABLE 表名(
+列名1 数据类型,
+列名2 数据类型,
+列名3 数据类型,
+...
+)
+
+ALTER TABLE 表名;
+ALTER TABLE 表名 ADD 列名 数据类型;
+ALTER TABLE 表名 CHANGE 列名 新列名 新数据类型;
+ALTER TABLE 表名 DROP 列名;
+
+DROP TABLE 表名;
+
+DROP DATABASE 数据库名;
+```
+
+## DML
+
+DML（Data Manipulation Language）语句: 数据操纵语言，主要是对数据进行增加、删除、修改操作。常用的语句关键字有 INSERT、UPDATE、DELETE 等。
+
+```sql
+INSERT INTO 表名 (字段1,字段2,...) values (某值,某值,...),(某值,某值,...), ...;
+
+UPDATE 表名 SET 列名=新值 WHERE 限定条件;
+
+DELETE FROM 表名 WHERE 限定条件;
+```
+
+## DQL
+
+DQL（Data Query Language）语句：数据查询语言，主要是对数据进行查询操作。
+
+```sql
+# 指定要查询的列，可以是表中的列名，也可以是聚合函数（如SUM()、COUNT()等）
+SELECT 列名1, 列名2, ...    
+# 指定要查询的表
+FROM 表名   
+# 用于过滤记录，只有符合条件的记录才会被返回。可以使用逻辑运算符（如AND、OR）组合多个条件
+# 但不能使用聚合函数，如果要用聚合函数则需要用 HAVING。
+WHERE 条件  
+# 对结果集进行分组，通常与聚合函数一起使用，以便对每组计算聚合值。
+GROUP BY 列名   
+# 对分组后的记录进行过滤，类似于WHERE，但用于聚合函数的结果。
+HAVING 条件     
+ORDER BY 列名 [ASC|DESC]
+# 限制查询返回的记录数量，常用于分页或获取前N条记录。
+LIMIT 数量;     
+```
+
+## DCL
+
+DCL（Data Control Language）语句： 数据控制语言，主要是用来设置/更改数据库用户权限。常用关键字有 GRANT、REVOKE 等。一般人员很少用到DCL语句。
+
+```sql
+GRANT （授权）
+
+REVOKE （取消权限）
+```
+
 ## 概念题
 
 1. 下面有关sql 语句中 delete、truncate的说法正确的是？
