@@ -18,7 +18,7 @@ There, I developed a departmental activity management module to streamline appro
 
 I also participated in an Innovation Training Program where I developed the backend of the web application for an auxiliary medical treatment platform, which can improve diagnosis accuracy.
 
-I bring a strong work ethic, adaptability, and team spirit. I can handle high-stress environments. I am committed to efficient, user-oriented work. 
+I bring a strong work ethic, adaptability, and team spirit. I can handle high-stress environments. I am committed to efficient, detail-oriented work. 
 
 My ability to analyze systems and implement improvements under pressure has helped a lot in my previous roles.
 
