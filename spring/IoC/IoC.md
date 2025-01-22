@@ -49,6 +49,8 @@
      - 当Spring容器启动时，会扫描所有配置的bean并进行实例化。
      - 在bean实例化之后但在属性注入之前，Spring会通过BeanPostProcessor接口的实现类来检查该bean是否需要代理。
      - 如果需要代理，Spring会创建该bean的代理对象，并将代理对象注册到Spring容器中，替换原始的bean。代理对象可以说是升级版的bean对象，比普通的bean对象功能更强大一些。
+     - 代理对象是实现面向切面编程（AOP）的核心机制。AOP允许将横切关注点的逻辑封装成一个“切面”（Aspect），并将其应用到多个类或方法中，而不需要修改这些类或方法的代码。Spring通过代理对象在方法执行前后插入切面逻辑，实现了AOP的功能。
+     - 例如，使用@Transactional注解时，Spring会为目标方法创建一个代理对象，在方法执行前后自动处理事务的开始、提交或回滚。@Log；；可以在指定的方法执行前后记录日志，记录方法调用的输入参数、执行结果等。
 
 ## IoC、DI和AOP思想的提出和框架概念
 
@@ -794,7 +796,7 @@ public class DefaultSingletonBeanRegistry ... {
 
 - 三级缓存：当 Spring 创建一个单例 bean 时，首先从 singletonObjects 中查找。如果没有找到，则进入下一个缓存级别。Spring 会检查 earlySingletonObjects，看这个 bean 是否被提前暴露出来了。如果已经有一个半成品对象，就直接使用该对象，以避免循环依赖时重复创建。如果 earlySingletonObjects 中也没有找到，Spring 会查找 singletonFactories。如果存在一个工厂方法，Spring 会通过该工厂创建一个早期引用，通常会在工厂方法中生成该 bean 或进行代理处理。
 - 使用 singletonFactories 提供了延迟创建的机制，这确保了只有在真正需要提前曝光对象时才会将它存入 earlySingletonObjects。如果没有循环依赖或者需要提前曝光，Spring 会尽量让对象完全初始化后直接加入 singletonObjects。
-- 如果三级缓存也没找到，说明该bean还未实例化，此时Spring会先调用构造方法（还没有进行依赖注入和其他初始化操作），然后在实例创建后但依赖注入之前，将一个工厂方法（ObjectFactory）存入三级缓存（singletonFactories），目的是为了让其他依赖该 bean 的对象能够通过这个工厂获取 bean 的早期引用。
+- 如果三级缓存也没找到，说明该bean还未实例化，此时Spring会先调用构造方法（还没有进行依赖注入和其他初始化操作），然后在实例创建后但依赖注入之前，将一个工厂方法（ObjectFactory）存入三级缓存（singletonFactories），目的是为了让其他依赖该 bean 的对象能够通过这个工厂获取 bean 的早期引用，一旦其他bean对象获取了三级缓存中的引用，就会把这个被引用的对象存入二级缓存。
 - 所谓“存入工厂方法”其实就是向工厂对象中的一个Map中添加一个键值对，key为beanName，value为工厂对象本身。
 
 ##### 常用的Aware接口
