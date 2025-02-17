@@ -36,9 +36,34 @@ Tomcat按照Servlet规范的要求实现了Servlet容器，同时它们也具有
 
 ## Servlet 容器工作流程
 
-当用户请求某个资源时，HTTP服务器会用一个servletRequest对象把客户的请求信息封装起来，servlet容器拿到请求后，根据请求的URL和servlet的映射关系，找到相应的servlet，如果servlet还没有被加载，就用反射机制创建这个servlet，并调用servlet的init方法来完成初始化，接着调用servlet的service方法来处理请求，把servletResponse对象返回给HTTP服务器，HTTP服务器会把响应发送给客户端。
+当用户请求某个资源时，HTTP服务器会发送一个HTTP请求，该请求经过解析最终被发送到 Tomcat 所监听的端口上，然后 Tomcat 中的 Servlet 容器会把客户的请求信息封装起来，并根据请求的URL和servlet的映射关系，找到相应的servlet，将被封装的 ServletRequest 与 ServletResponse 对象交给它。如果servlet还没有被加载，就用反射机制创建这个servlet，并调用servlet的init方法来完成初始化，接着调用servlet的service方法来处理请求，把servletResponse对象返回给HTTP服务器，HTTP服务器会把响应发送给客户端。
 
 ![alt text](image-5.png)
+
+![alt text](image-9.png)
+
+Java 中有 `ServletRequest` 和 `HttpServletRequest` 接口：
+
+```java
+@GetMapping("/test")
+public String test(HttpServletRequest request, HttpServletResponse response){}
+```
+
+在控制器中，这样的写法可以直接处理 Servlet 容器（Tomcat）所创建的封装请求信息与封装响应信息。其中有几个方法例如：
+
+- `ServletRequest` 接口:
+  - `getParameter(String name)`：返回请求参数的值，如果请求参数不存在，则返回null
+  - `getAttribute(String name)`：返回指定属性名称的属性值，如果属性不存在，则返回null
+  - `setAttribute(String name, Object value)`：将指定属性名称的属性值设置为指定的值
+  - `getSession()`：返回与此请求相关联的会话，如果请求没有会话，则创建一个新会话
+- `HttpServletRequest` 接口继承自 `ServletRequest` 接口:
+  - getPathInfo()：返回HTTP请求的路径信息
+  - getServletPath()：返回HTTP请求的Servlet路径
+  - getRequestURI()：返回HTTP请求的统一资源标识符（URI）
+  - getRequestURL()：返回HTTP请求的统一资源定位器（URL）
+
+> ServletRequest接口提供了通用的请求信息的访问方法，而HttpServletRequest接口主要是为了提供更多HTTP特定的请求信息，方便在开发中处理HTTP请求和响应。在实际开发中，我们一般会使用HttpServletRequest接口来访问HTTP请求的相关信息。
+> HTTP 请求消息分为请求行、请求消息头和请求消息体三部分，所以 HttpServletRequest 接口中定义了获取请求行、请求头和请求消息体的相关方法。
 
 ## Tomcat 整体架构
 
