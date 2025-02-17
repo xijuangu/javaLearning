@@ -61,6 +61,11 @@ public String test(HttpServletRequest request, HttpServletResponse response){}
   - getServletPath()：返回HTTP请求的Servlet路径
   - getRequestURI()：返回HTTP请求的统一资源标识符（URI）
   - getRequestURL()：返回HTTP请求的统一资源定位器（URL）
+  - URI/URL:
+    - 在网络资源的标识和定位中，URI（Uniform Resource Identifier，统一资源标识符）和URL（Uniform Resource Locator，统一资源定位符）是两个经常被提及的概念。它们之间存在着密切的关系，但也有明显的区别。
+    - URI是一个用于标识某一互联网资源名称的字符串。它的主要目的是使资源能够被唯一地标识和区分。URI有两个子类：URL和URN（Uniform Resource Name，统一资源名称）。
+    - URL是URI的常见形式，它不仅标识资源，还提供了找到该资源的方法。换句话说，所有的URL都是URI，但不是所有的URI都是URL。URL是互联网上用来标识某一处资源的具体地址。例如，当我们在浏览器中输入`http://www.example.com` 时，这个地址就是一个URL。它包含了访问资源所需的所有信息，如协议（HTTP）、服务器位置（`www.example.com`）以及（在更复杂的URL中）资源在服务器上的特定位置。
+    - 简单来说，URI更像是一个资源的身份证号码，而URL则提供了到达这个资源的具体路径。例如，一个人可以通过身份证号被唯一识别（URI），而他的家庭住址（URL）则告诉你如何找到他的具体位置。
 
 > ServletRequest接口提供了通用的请求信息的访问方法，而HttpServletRequest接口主要是为了提供更多HTTP特定的请求信息，方便在开发中处理HTTP请求和响应。在实际开发中，我们一般会使用HttpServletRequest接口来访问HTTP请求的相关信息。
 > HTTP 请求消息分为请求行、请求消息头和请求消息体三部分，所以 HttpServletRequest 接口中定义了获取请求行、请求头和请求消息体的相关方法。
