@@ -96,6 +96,20 @@ SELECT
 FROM student_table;
 ```
 
+## JOIN/LEFT JOIN/RIGHT JOIN
+
+```sql
+A JOIN B ON A.colum=B.colum
+```
+
+```sql
+SELECT Persons.LastName, Persons.FirstName, Orders.OrderNo
+FROM Persons
+INNER JOIN Orders
+ON Persons.Id_P = Orders.Id_P
+ORDER BY Persons.LastName
+```
+
 ## 视图
 
 视图是一个虚拟表，它是通过 SQL 查询语句定义的，并可以像表一样进行查询。创建视图的标准语法如下：
@@ -142,6 +156,44 @@ Shirt E|Casual|22.00|2
 Shirt B|Casual|25.00|3
 Shirt D|Formal|28.00|1
 Shirt C|Formal|30.00|2
+
+## 聚合函数
+
+COUNT()：用于返回某个列的行数或符合条件的行数。
+
+```sql
+SELECT COUNT(*) FROM employees;
+```
+
+SUM()：用于计算某列数值的总和。
+
+```sql
+SELECT SUM(salary) FROM employees;
+```
+
+AVG()：用于计算某列数值的平均值。
+
+```sql
+SELECT AVG(salary) FROM employees;
+```
+
+MAX()：用于返回某列中的最大值。
+
+```sql
+SELECT MAX(salary) FROM employees;
+```
+
+MIN()：用于返回某列中的最小值。
+
+```sql
+SELECT MIN(salary) FROM employees;
+```
+
+GROUP_CONCAT()：用于将多行数据合并为一个字符串。它通常与 GROUP BY 一起使用。
+
+```sql
+SELECT department, GROUP_CONCAT(employee_name) FROM employees GROUP BY department;
+```
 
 ## IN 子句
 
@@ -263,6 +315,7 @@ DQL（Data Query Language）语句：数据查询语言，主要是对数据进�
 
 ```sql
 # 指定要查询的列，可以是表中的列名，也可以是聚合函数（如SUM()、COUNT()等）
+# 如果是聚合函数与列名并列查询，那么这个列名必须出现在GROUP BY中。
 SELECT 列名1, 列名2, ...    
 # 指定要查询的表
 FROM 表名   
@@ -271,11 +324,12 @@ FROM 表名
 WHERE 条件  
 # 对结果集进行分组，通常与聚合函数一起使用，以便对每组计算聚合值。
 GROUP BY 列名   
-# 对分组后的记录进行过滤，类似于WHERE，但用于聚合函数的结果。
+# 对分组后的记录进行过滤，类似于WHERE，但用于聚合函数的结果，且只能过滤GROUP BY中的列名。
+# 因此有HAVING必有GROUP BY。
 HAVING 条件     
 ORDER BY 列名 [ASC|DESC]
-# 限制查询返回的记录数量，常用于分页或获取前N条记录。
-LIMIT 数量;     
+# 限制查询返回的记录数量，常用于分页或获取前N条记录，OFFSET可选。
+LIMIT 数量 OFFSET 数量;     
 ```
 
 ## DCL
