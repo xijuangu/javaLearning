@@ -110,6 +110,30 @@ ON Persons.Id_P = Orders.Id_P
 ORDER BY Persons.LastName
 ```
 
+## UNION (ALL)
+
+UNION 操作中的列数和数据类型必须相同（或者为 NULL），且会自动去除重复行，UNION ALL 则会保留所有行
+
+```sql
+SELECT column1, column2, ...
+FROM table1
+[WHERE condition1]
+UNION [ALL]
+SELECT column1, column2, ...
+FROM table2
+[WHERE condition2]
+[ORDER BY column1, column2, ...];
+```
+
+列数和数据类型必须相同：
+
+```sql
+SELECT first_name, last_name FROM employees
+UNION
+SELECT department_name, NULL FROM departments
+ORDER BY first_name;
+```
+
 ## 视图
 
 视图是一个虚拟表，它是通过 SQL 查询语句定义的，并可以像表一样进行查询。创建视图的标准语法如下：
@@ -236,7 +260,7 @@ sno|class|score
 
 ## IF 子句
 
-IF 子句是 MySQL 提供的一个条件函数，用于根据某个条件返回不同的值。与 CASE 表达式类似，但更简单。IF 函数接受三个参数：条件、条件为真时返回的值、条件为假时返回的值。
+IF 子句是 MySQL 提供的一个条件函数，用于根据某个条件返回不同的值。与 CASE 表达式功能相同（只有两种 CASE 的情况下），但更简单。IF 函数接受三个参数：条件、条件为真时返回的值、条件为假时返回的值。
 
 ```sql
 IF(condition, true_value, false_value)
@@ -341,6 +365,33 @@ GRANT （授权）
 
 REVOKE （取消权限）
 ```
+
+## 索引失效的常见情况
+
+1. 对索引列使用**函数**或表达式：
+例如：`WHERE YEAR(create_time) = 2023`。
+索引失效原因：数据库无法直接使用索引列的值，而是需要对每一行数据应用函数或表达式。
+2. 对索引列进行**隐式类型转换**：
+例如：`WHERE user_id = '123'`，而 `user_id` 是整数类型。
+索引失效原因：数据库需要将 `user_id` 转换为字符串类型，导致无法使用索引。
+3. 使用 `OR` **连接的条件中只有部分字段有索引**：
+例如：`WHERE a = 1 OR b = 2`，如果 `a` 和 `b` 中只有一个有索引，索引可能失效。
+索引失效原因：`OR` 条件可能导致数据库无法有效使用索引。
+4. 使用 `LIKE` **以通配符开头**：
+例如：`WHERE name LIKE '%abc'`。
+索引失效原因：通配符在开头时，数据库无法利用索引进行前缀匹配。
+5. 复合索引**未遵循最左前缀原则**：
+例如：复合索引是 `(a, b, c)`，但查询条件是 `WHERE b = 2 AND c = 3`。
+索引失效原因：复合索引必须从最左边的列开始使用。
+6. **数据分布不均匀**：
+例如：某个列的值大部分相同（如性别列），即使有索引，数据库也可能选择全表扫描。
+索引失效原因：索引的选择性太低，数据库认为全表扫描更高效。
+7. 使用 `NOT IN` 或 `!=`：
+例如：`WHERE status != 'active'`。
+索引失效原因：`NOT IN` 或 `!=` 条件通常无法有效利用索引，而 `NOT EXISTS` 则优化得更好，更可能使用索引。
+8. 查询**返回大量数据**：
+例如：`SELECT * FROM users`。
+索引失效原因：当查询返回的数据量很大时，数据库可能选择全表扫描而不是使用索引。
 
 ## 概念题
 

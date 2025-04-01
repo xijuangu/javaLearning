@@ -26,9 +26,9 @@ Filter接口中有一个 doFilter 方法，当我们编写好 Filter，并配置
 - 是否调用目标资源（即是否让用户访问 web 资源）。
 - 调用目标资源之后，让一段代码执行。
 
-web 服务器在调用 doFilter 方法时，会传递一个 FilterChain 对象进来，它也提供了一个 doFilter 方法。那么什么是 FilterChain 呢？FilterChain 中的 doFilter 方法和 Filter 中的有什么区别呢？
+web 服务器在调用 filter 的 doFilter 方法时，会传递一个 FilterChain 对象进来，它也提供了一个 doFilter 方法。那么什么是 FilterChain 呢？FilterChain 中的 doFilter 方法和 Filter 中的有什么区别呢？
 
-当一个请求到达 Web 应用时，如果该请求与一个或多个过滤器相关联，这些过滤器会按照定义的顺序形成一个过滤器链。每个过滤器在执行其任务后，需要调用 FilterChain.doFilter 方法来将请求传递给该过滤器链中的下一个过滤器。如果当前过滤器是链中的最后一个，那么 doFilter 方法会将请求传递给目标资源，比如一个 Servlet。
+当一个请求到达 Web 应用时，如果该请求与一个或多个过滤器相关联，这些过滤器会按照定义的顺序形成一个过滤器链，FilterChain 是由容器实现的一个接口，串联起所有的 filter。每个过滤器在执行其任务后，需要调用 FilterChain.doFilter 方法来将请求传递给该过滤器链中的下一个过滤器。如果当前过滤器是链中的最后一个，那么 doFilter 方法会将请求传递给目标资源，比如一个 Servlet。
 
 因此也就是说，如果要在这个过滤器中放行这个请求，就调用 FilterChain 的 doFilter 方法，否则就进行拒绝逻辑。
 
@@ -125,4 +125,58 @@ public PasswordEncoder passwordEncoder() {
 
 BCrypt 的特点是，每次加密都使用随机生成的盐值，因此同一个明文密码，每次加密的结果都不一样，但是校验都是可以通过的（暂时没去了解为什么，后面再说）
 
+另外再介绍一下 PasswordEncoder 类
+
+```java
+public interface PasswordEncoder {
+    // 输入 CharSequence，返回加密后的 String
+    // CharSequence 是更通用的接口（String、StringBuilder 等均实现它），提供灵活性。
+    String encode(CharSequence rawPassword); 
+    boolean matches(CharSequence rawPassword, String encodedPassword);
+    // 其他方法...
+}
+```
+
+因此，自定义的 PasswordEncoder 也是可以实现的，可以实现 PasswordEncoder 接口，重写 encode() 和 matches() 方法，也就是可以在其中使用自定义的加密算法
+
 #### 授权流程
+
+上面所说的认证，指的是确认你作为用户所拥有的身份，那么这里的授权指的就是判断用户所拥有的身份是否有足够的权限去获取他想要的资源，有则授权，无则拒绝
+
+![alt text](image-4.png)
+
+显然，其中 AccessDecisionManager 是最终作决定的部分，用户权限与访问资源所需的权限的对比就在这里进行。AccessDecisionManager 是一个接口，其中有一个 decide() 方法
+
+```java
+void decide(Authentication authentication, Object object, Collection<ConfigAttribute> configAttributes) 
+throws AccessDeniedException, InsufficientAuthenticationException;
+```
+
+这里着重说一下 decide() 的参数：
+
+- authentication: 要访问资源的访问者的身份信息
+- object: 要访问的受保护的资源，web 请求对应 FilterInvocation
+- configAttributes: 受保护资源的访问策略，通过 SecurityMetadataSource 获取
+
+AccessDecisionManager 中有一个成员变量是 AccessDecisionVoter 的数组，decision 方法中就是会将这些 voter 的投票情况记录下来，然后进行一些逻辑操作，最终得到是否放行的结论
+
+AccessDecisionManager 有三个实现类: AffirmativeBased、ConsensusBased 和 UnanimousBased
+
+![alt text](image-5.png)
+
+AffirmativeBased 的逻辑是:
+(1) 只要有 AccessDecisionVoter 的投票为ACCESS_GRANTED则同意用户进行访问;
+(2) 如果全部弃权也表示通过
+(3) 如果没有一个人投赞成票，但是有人投反对票，则将抛出AccessDeniedException.
+Spring security默认使用的是AffirmativeBased.
+
+ConsensusBased 的逻辑是:
+(1) 如果赞成票多于反对票则表示通过。
+(2) 反过来，如果反对票多于赞成票则将抛出 AccessDeniedException。
+(3) 如果赞成票与反对票相同且都不等于0,并且属性allowIfEqualGrantedDeniedDecisions 的值为 true,
+则表示通过，否则将抛出异常 AccessDeniedException。该参数的值默认
+为 true。
+(4)如果所有的 AccessDecisionVoter 都弃权了,则将视参数allowIfAllAbstainDecisions的值而定,如果
+该值为 true 则表示通过，否则将抛出异常 AccessDeniedException。该参数的值默认为 false.
+
+最后一个 UnanimousBased 简单来说就是一票否决，那么 AffirmativeBased 可以说就是一票通过，ConsensusBased 可以说就是少数服从多数，平局看参数
